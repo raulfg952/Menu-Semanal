@@ -328,6 +328,11 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 .nut-bar-fill{height:100%;border-radius:99px;transition:width .4s ease}
 .nut-idr{font-size:8px;color:#9ca3af;margin-top:2px}
 .nut-no-data{font-size:11px;color:#9ca3af;font-style:italic;text-align:center;padding:12px 0}
+/* ── CHIPS FILTRO SUPERMERCADO ── */
+.super-chip{padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;cursor:pointer;transition:all .18s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.super-chip.active{color:#fff;border-color:transparent}
+.super-chip:hover:not(.active){background:#f3f4f6}
+
 
 </style>
 
@@ -370,7 +375,13 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
   <!-- HEADER -->
   <div class="ft-header">
     <div class="ft-header-inner">
-      <div class="ft-logo">Mi<span>Menú</span> <span style="font-size:13px;font-style:normal;opacity:.8;font-family:'DM Sans',sans-serif;font-weight:300">· Planificación semanal</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="ft-logo">Mi<span>Menú</span> <span style="font-size:13px;font-style:normal;opacity:.8;font-family:'DM Sans',sans-serif;font-weight:300">· Planificación semanal</span></div>
+        <div style="display:flex;gap:6px">
+          <button onclick="exportarDatos()" title="Exportar datos" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">⬇️</button>
+          <label title="Importar datos" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">⬆️<input type="file" accept=".json" onchange="importarDatos(event)" style="display:none"/></label>
+        </div>
+      </div>
       <div class="ft-tabs">
         <button class="ft-tab active" onclick="switchTab('semana')">Semana</button>
         <button class="ft-tab" onclick="switchTab('mes')">Mes</button>
@@ -450,6 +461,7 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       </div>
       <div class="sec-panel" id="sec-productos">
         <div class="search-wrap"><span class="search-icon">&#128269;</span><input type="text" placeholder="Buscar productos..." oninput="renderProductosList(this.value)" id="productos-search"/></div>
+        <div id="super-filter-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
         <div id="productos-list"></div>
       </div>
     </div>
@@ -701,6 +713,17 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
         </select>
       </div>
     </div>
+    <div class="form-group"><label class="form-lbl">Supermercado</label>
+      <select class="form-input" id="pr-super" style="padding:9px 8px">
+        <option value="">— Sin especificar —</option>
+        <option value="Mercadona">🟠 Mercadona</option>
+        <option value="Carrefour">🔵 Carrefour</option>
+        <option value="Lidl">🟡 Lidl</option>
+        <option value="ALDI">🔵 ALDI</option>
+        <option value="Lupa">🟢 Lupa</option>
+        <option value="Otro">⚪ Otro</option>
+      </select>
+    </div>
     <div class="form-group"><label class="form-lbl">Tamaño de porción (opcional)</label><input type="text" class="form-input" id="pr-porcion" placeholder="Ej: 250g, 1 brik, 1 lata..."/></div>
     <div class="macro-grid">
       <div><label>HC (g)</label><input type="number" class="form-input" id="pr-hc" placeholder="30" min="0" oninput="updatePrHint()"/></div>
@@ -845,7 +868,8 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 const DAYS=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 const DAYS_SHORT=['L','M','X','J','V','S','D'];
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const BASE_DATE=new Date(2026,3,2);
+// Semana actual siempre
+const BASE_DATE=(()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate());})();
 
 const DESPENSA=[
 // ══════════════════════════════════════════
@@ -2225,10 +2249,12 @@ function openProductoModal(editIdx){
     document.getElementById('pr-prot').value=p.prot;
     document.getElementById('pr-gras').value=p.gras;
     document.getElementById('pr-cat').value=p.compracat||'🛍 Otros';
+    document.getElementById('pr-super').value=p.supermercado||'';
     document.getElementById('pr-porcion').value=p.porcion||'';
   }else{
     document.getElementById('producto-title').textContent='Nuevo producto';
     ['pr-name','pr-cals','pr-hc','pr-prot','pr-gras','pr-porcion'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('pr-super').value='';
     document.getElementById('pr-cat').value='🧴 Conservas y salsas';
   }
   document.getElementById('pr-hint').innerHTML='';
@@ -2256,13 +2282,14 @@ function saveProducto(){
   const prot=parseFloat(document.getElementById('pr-prot').value)||0;
   const gras=parseFloat(document.getElementById('pr-gras').value)||0;
   const compracat=document.getElementById('pr-cat').value;
+  const supermercado=document.getElementById('pr-super').value;
   const porcion=document.getElementById('pr-porcion').value.trim();
   // compute macro % from g (approx)
   const totalCal=hc*4+prot*4+gras*9||1;
   const hcPct=Math.round(hc*4/totalCal*100);
   const protPct=Math.round(prot*4/totalCal*100);
   const grasPct=Math.round(gras*9/totalCal*100);
-  const p={name,cals,hc:hcPct,prot:protPct,gras:grasPct,hcG:hc,protG:prot,grasG:gras,cat:'Otros',compracat,porcion,_isProducto:true};
+  const p={name,cals,hc:hcPct,prot:protPct,gras:grasPct,hcG:hc,protG:prot,grasG:gras,cat:'Otros',compracat,supermercado,porcion,_isProducto:true};
   if(editingPrIdx!==null)misProductos[editingPrIdx]=p;
   else misProductos.push(p);
   closeModal('modal-producto');
@@ -2281,28 +2308,78 @@ function sortProductoBy(col){
   renderProductosList(document.getElementById('productos-search').value);
 }
 
+const SUPER_META={
+  'Mercadona':{color:'#f97316',emoji:'🟠'},
+  'Carrefour': {color:'#3b82f6',emoji:'🔵'},
+  'Lidl':      {color:'#eab308',emoji:'🟡'},
+  'ALDI':      {color:'#1d4ed8',emoji:'🔵'},
+  'Lupa':      {color:'#16a34a',emoji:'🟢'},
+  'Otro':      {color:'#6b7280',emoji:'⚪'},
+};
+let superFiltroActivo=null;
+
+function renderSuperChips(){
+  const wrap=document.getElementById('super-filter-chips');
+  if(!wrap)return;
+  // Detectar qué supermercados tienen productos
+  const usados=new Set(misProductos.map(p=>p.supermercado).filter(Boolean));
+  if(usados.size===0){wrap.innerHTML='';return;}
+  let html='';
+  // Chip "Todos"
+  const todosActive=superFiltroActivo===null;
+  html+=`<button class="super-chip${todosActive?' active':''}" onclick="setSuperFiltro(null)"
+    style="${todosActive?'background:#374151;border-color:#374151':''}">Todos</button>`;
+  usados.forEach(s=>{
+    const meta=SUPER_META[s]||{color:'#6b7280',emoji:'⚪'};
+    const active=superFiltroActivo===s;
+    html+=`<button class="super-chip${active?' active':''}" onclick="setSuperFiltro('${s}')"
+      style="${active?`background:${meta.color};border-color:${meta.color}`:''}">
+      ${meta.emoji} ${s}</button>`;
+  });
+  wrap.innerHTML=html;
+}
+
+function setSuperFiltro(super_){
+  superFiltroActivo=super_;
+  renderSuperChips();
+  renderProductosList(document.getElementById('productos-search').value);
+}
+
 function renderProductosList(q){
   const el=document.getElementById('productos-list');
   if(!el)return;
+  renderSuperChips();
   let all=[...misProductos];
   if(q)all=all.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()));
+  if(superFiltroActivo)all=all.filter(p=>p.supermercado===superFiltroActivo);
   if(!all.length){
-    el.innerHTML='<div class="empty-tbl" style="text-align:center;padding:2rem 1rem"><div style="font-size:32px;margin-bottom:10px">🛍</div><div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">Sin productos aún</div><div style="font-size:11px;color:#9ca3af">Añade productos de supermercado con su información nutricional.</div></div>';
+    const msg=misProductos.length===0
+      ?'<div class="empty-tbl" style="text-align:center;padding:2rem 1rem"><div style="font-size:32px;margin-bottom:10px">🛍</div><div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">Sin productos aún</div><div style="font-size:11px;color:#9ca3af">Añade productos de supermercado con su información nutricional.</div></div>'
+      :'<div class="empty-tbl">Sin productos para este filtro.</div>';
+    el.innerHTML=msg;
     return;
   }
   const sorted=sortBy(all,sortProducto.col,sortProducto.dir);
   const s=sortProducto;
   el.innerHTML=`<table class="food-tbl"><thead><tr>
     <th style="${thStyle()}" onclick="sortProductoBy('name')">Nombre ${sortArrow(s,'name')}</th>
-    <th>Porción</th>
+    <th style="${thStyle()}" onclick="sortProductoBy('supermercado')">Super ${sortArrow(s,'supermercado')}</th>
+    <th style="${thStyle()}" onclick="sortProductoBy('compracat')">Categoría ${sortArrow(s,'compracat')}</th>
     <th style="${thStyle()}" onclick="sortProductoBy('cals')">kcal ${sortArrow(s,'cals')}</th>
-    <th>HC (g)</th><th>Prot (g)</th><th>Grasas (g)</th>
+    <th style="${thStyle()}" onclick="sortProductoBy('hcG')">HC ${sortArrow(s,'hcG')}</th>
+    <th style="${thStyle()}" onclick="sortProductoBy('protG')">Prot ${sortArrow(s,'protG')}</th>
+    <th style="${thStyle()}" onclick="sortProductoBy('grasG')">Grasas ${sortArrow(s,'grasG')}</th>
     <th></th>
   </tr></thead><tbody>${
     sorted.map((p,i)=>{
       const realIdx=misProductos.indexOf(p);
-      return`<tr><td><strong>${p.name}</strong><br><span style="font-size:9px;background:#eff6ff;color:#1e3a5f;padding:1px 5px;border-radius:99px;border:1px solid #bfdbfe">${p.compracat}</span></td>
-        <td style="color:#6b7280;font-size:11px">${p.porcion||'—'}</td>
+      const meta=SUPER_META[p.supermercado]||{color:'#6b7280',emoji:'⚪'};
+      const superBadge=p.supermercado
+        ?`<span style="font-size:9px;background:${meta.color}22;color:${meta.color};padding:1px 6px;border-radius:99px;border:1px solid ${meta.color}44;margin-left:4px;font-weight:600">${meta.emoji} ${p.supermercado}</span>`
+        :'';
+      return`<tr><td><strong>${p.name}</strong><br><span style="font-size:9px;color:#9ca3af">${p.porcion||''}</span></td>
+        <td>${superBadge||'<span style="font-size:10px;color:#d1d5db">—</span>'}</td>
+        <td style="font-size:10px;color:#6b7280">${p.compracat||'—'}</td>
         <td><strong>${p.cals}</strong></td>
         <td>${p.hcG||'—'}g</td><td>${p.protG||'—'}g</td><td>${p.grasG||'—'}g</td>
         <td><div class="tbl-actions">
@@ -2426,6 +2503,7 @@ function sortComidaBy(col){
 function sortAlimentoBy(col){
   if(sortAlimento.col===col)sortAlimento.dir*=-1;
   else{sortAlimento.col=col;sortAlimento.dir=1;}
+  builtinVisible=100;
   renderBuiltinList(document.getElementById('builtin-search').value);
 }
 
@@ -2462,28 +2540,36 @@ function renderCustomList(q){
   }</tbody></table>`;
 }
 
-function renderBuiltinList(q){
+let builtinVisible=100;
+function renderBuiltinList(q,reset){
+  if(reset||reset===undefined)builtinVisible=100;
   const el=document.getElementById('builtin-list');
   let all=[...DESPENSA,...misAlimentos];
   if(q)all=all.filter(f=>f.name.toLowerCase().includes(q.toLowerCase())||f.cat.toLowerCase().includes(q.toLowerCase()));
   if(!all.length){el.innerHTML='<div class="empty-tbl">Sin resultados.</div>';return}
   const sorted=sortBy(all,sortAlimento.col,sortAlimento.dir);
+  const visible=sorted.slice(0,builtinVisible);
+  const remaining=sorted.length-builtinVisible;
   const s=sortAlimento;
-  el.innerHTML=`<table class="food-tbl"><thead><tr>
+  const rows=visible.map((f,si)=>{
+    const ei=misAlimentos.findIndex(a=>a.name===f.name&&a.cals===f.cals);const isExtra=ei>=0;
+    const rid='_ba_'+si;window[rid]=f;
+    return`<tr style="cursor:pointer" onclick="openSheetAlimento(window['${rid}'])"><td>${f.name}${isExtra?'<span class="src-badge">mío</span>':''}</td><td style="color:#6b7280">${f.cat}</td><td>${f.cals}</td><td>${f.hc}g</td><td>${f.prot}g</td><td>${f.gras}g</td></tr>`;
+  }).join('');
+  const showMore=remaining>0?`<tr><td colspan="6" style="text-align:center;padding:12px 0">
+    <button onclick="builtinVisible+=100;renderBuiltinList(document.getElementById('builtin-search').value,false)" style="background:#f0fdf4;border:1.5px solid rgba(5,150,105,.25);color:var(--em-3);border-radius:var(--rm);padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+      Mostrar más (+${Math.min(remaining,100)} de ${remaining} restantes)
+    </button>
+  </td></tr>`:'';
+  el.innerHTML=`<div style="font-size:10px;color:#9ca3af;margin-bottom:6px;text-align:right">Mostrando ${visible.length} de ${sorted.length} alimentos</div>
+  <table class="food-tbl"><thead><tr>
     <th style="${thStyle()}" onclick="sortAlimentoBy('name')">Nombre ${sortArrow(s,'name')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('cat')">Categoría ${sortArrow(s,'cat')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('cals')">kcal ${sortArrow(s,'cals')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('hc')">HC ${sortArrow(s,'hc')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('prot')">P ${sortArrow(s,'prot')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('gras')">G ${sortArrow(s,'gras')}</th>
-  </tr></thead><tbody>${
-    sorted.map((f,si)=>{
-      const ei=misAlimentos.findIndex(a=>a.name===f.name&&a.cals===f.cals);const isExtra=ei>=0;
-      // Store food data in a registry to avoid inline JSON serialization issues
-      const rid='_ba_'+si;window[rid]=f;
-      return`<tr style="cursor:pointer" onclick="openSheetAlimento(window['${rid}'])"><td>${f.name}${isExtra?'<span class="src-badge">mío</span>':''}</td><td style="color:#6b7280">${f.cat}</td><td>${f.cals}</td><td>${f.hc}g</td><td>${f.prot}g</td><td>${f.gras}g</td></tr>`;
-    }).join('')
-  }</tbody></table>`;
+  </tr></thead><tbody>${rows}${showMore}</tbody></table>`;
 }
 
 // ── DETAIL SHEETS ──
@@ -3110,6 +3196,61 @@ function generateFromMenu(){
   else alert('Todos los artículos del menú ya estaban en la lista.');
 }
 
+
+// ── EXPORTAR / IMPORTAR DATOS ──
+function exportarDatos(){
+  const datos={
+    version:1,
+    fecha:new Date().toISOString(),
+    menuData,
+    misComidas,
+    misAlimentos,
+    misProductos,
+    compraItems
+  };
+  const json=JSON.stringify(datos,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const fecha=new Date().toLocaleDateString('es-ES').replace(/\//g,'-');
+  a.href=url;
+  a.download=`mimenu-backup-${fecha}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importarDatos(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const datos=JSON.parse(e.target.result);
+      if(!datos.version||!datos.menuData){
+        alert('❌ Archivo no válido. Asegúrate de usar un backup de MiMenú.');
+        return;
+      }
+      if(!confirm(`¿Importar backup del ${new Date(datos.fecha).toLocaleDateString('es-ES')}?\n\nEsto reemplazará tus datos actuales.`))return;
+      menuData=datos.menuData||{};
+      misComidas=datos.misComidas||[];
+      misAlimentos=datos.misAlimentos||[];
+      misProductos=datos.misProductos||[];
+      compraItems=datos.compraItems||[];
+      saveAll();
+      render();
+      renderCustomList('');
+      renderBuiltinList('');
+      renderProductosList('');
+      renderCompra();
+      alert('✅ Datos importados correctamente.');
+    }catch(err){
+      alert('❌ Error al leer el archivo: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
 render();
 renderCustomList('');
 renderBuiltinList('');
@@ -3118,43 +3259,13 @@ renderProductosList('');
 
 <script>
 // ── PWA: Service Worker registration ──
-if('serviceWorker' in navigator){
-  // SW inline via Blob para evitar restricciones de archivo único
-  const swCode = `
-const CACHE='mimenu-v1';
-const ASSETS=[self.location.href.replace('/sw-inline','')];
-self.addEventListener('install',e=>{
-  e.waitUntil(
-    caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())
-  );
-});
-self.addEventListener('activate',e=>{
-  e.waitUntil(
-    caches.keys().then(keys=>Promise.all(
-      keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))
-    )).then(()=>self.clients.claim())
-  );
-});
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
-  e.respondWith(
-    caches.match(e.request).then(cached=>{
-      if(cached)return cached;
-      return fetch(e.request).then(resp=>{
-        if(!resp||resp.status!==200)return resp;
-        const clone=resp.clone();
-        caches.open(CACHE).then(c=>c.put(e.request,clone));
-        return resp;
-      }).catch(()=>cached||new Response('Sin conexión',{status:503}));
-    })
-  );
-});
-  `;
-  const blob = new Blob([swCode], {type:'application/javascript'});
-  const swURL = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swURL, {scope: '/'})
-    .then(()=>console.log('SW registrado'))
-    .catch(e=>console.warn('SW error:',e));
+// Service Worker: solo se registra cuando la app está servida desde
+// un servidor real (https:// o localhost). En archivo local no aplica.
+if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
+  // El SW necesita un fichero .js separado; cuando la app está en GitHub Pages
+  // funciona automáticamente gracias al caché del navegador y el manifest.
+  // Si quieres SW completo, crea un fichero sw.js junto al index.html.
+  console.log('MiMenú PWA lista');
 }
 
 // ── Instalar banner para iOS ──
