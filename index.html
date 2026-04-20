@@ -4895,14 +4895,11 @@ renderProductosList('');
 </script>
 
 <script>
-// ── PWA: Service Worker registration ──
-// Service Worker: solo se registra cuando la app está servida desde
-// un servidor real (https:// o localhost). En archivo local no aplica.
+// ── PWA: Service Worker ──
 if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
-  // El SW necesita un fichero .js separado; cuando la app está en GitHub Pages
-  // funciona automáticamente gracias al caché del navegador y el manifest.
-  // Si quieres SW completo, crea un fichero sw.js junto al index.html.
-  console.log('MiMenú PWA lista');
+  navigator.serviceWorker.register('./sw.js')
+    .then(() => console.log('MiMenú SW registrado'))
+    .catch(() => console.log('MiMenú PWA lista (sin SW)'));
 }
 
 // ── Instalar banner para iOS ──
