@@ -441,6 +441,39 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 
 /* ── NOTAS EN COMIDAS ── */
 .meal-note{font-size:10px;color:#9ca3af;font-style:italic;margin-top:1px;display:block}
+
+/* ── ELABORACIÓN ── */
+.elab-badge{font-size:8px;padding:1px 6px;border-radius:99px;background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;font-weight:500;white-space:nowrap;flex-shrink:0}
+
+/* ── NOTA DÍA ── */
+.day-nota{font-size:10px;color:#9ca3af;font-style:italic;padding:4px 15px 0;margin-bottom:-4px}
+
+/* ── OBJETIVOS MACROS ── */
+.obj-modal .form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.obj-progress{margin-bottom:10px}
+.obj-progress-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.obj-progress-lbl{font-size:10px;font-weight:600;width:60px;flex-shrink:0}
+.obj-progress-track{flex:1;height:8px;background:#f3f4f6;border-radius:99px;overflow:hidden}
+.obj-progress-fill{height:100%;border-radius:99px;transition:width .4s ease}
+.obj-progress-val{font-size:9px;color:#6b7280;width:60px;text-align:right;flex-shrink:0}
+
+/* ── RECETA / PASOS ── */
+.paso-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f3f4f6;align-items:flex-start}
+.paso-item:last-child{border-bottom:none}
+.paso-num{width:22px;height:22px;border-radius:50%;background:var(--grad);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.paso-num.done{background:#d1fae5;color:#065f46}
+.paso-text{flex:1;font-size:12px;color:#374151;line-height:1.5}
+.paso-text.done{text-decoration:line-through;color:#9ca3af}
+.paso-timer{font-size:9px;background:#fffbeb;color:#92400e;border:1px solid #fde68a;border-radius:99px;padding:2px 7px;font-weight:600;white-space:nowrap;cursor:pointer;flex-shrink:0;margin-top:2px}
+.paso-timer.running{background:#ecfdf5;color:#065f46;border-color:#a7f3d0;animation:pulse .8s ease-in-out infinite}
+.paso-timer.done{background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb}
+.cocinar-btn{background:var(--grad);color:#fff;border:none;border-radius:var(--rm);padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .2s}
+.cocinar-btn:hover{opacity:.9}
+.paso-add-row{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* ── COMPARTIR ── */
+.share-preview{background:#f9fafb;border-radius:var(--rm);padding:12px;margin-bottom:12px;font-size:11px;color:#374151;border:1px solid #e5e7eb;max-height:200px;overflow-y:auto}
 /* ── CHIPS FILTRO SUPERMERCADO ── */
 .super-chip{padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;cursor:pointer;transition:all .18s;white-space:nowrap;font-family:'DM Sans',sans-serif}
 .super-chip.active{color:#fff;border-color:transparent}
@@ -491,6 +524,8 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div class="ft-logo">Mi<span>Menú</span> <span style="font-size:13px;font-style:normal;opacity:.8;font-family:'DM Sans',sans-serif;font-weight:300">· Planificación semanal</span></div>
         <div style="display:flex;gap:6px">
+          <button onclick="abrirObjetivos()" title="Objetivos nutricionales" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">🎯</button>
+          <button onclick="abrirCompartir()" title="Compartir semana" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">📤</button>
           <button onclick="exportarDatos()" title="Exportar datos" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">⬇️</button>
           <label title="Importar datos" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">⬆️<input type="file" accept=".json" onchange="importarDatos(event)" style="display:none"/></label>
         </div>
@@ -525,12 +560,18 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
           <button class="toggle-btn" id="btn-cal" onclick="setView('cal')">Calendario</button>
         </div>
         <button class="recycle-btn" onclick="openRecycle()">&#x267B; Reciclar</button>
-        <button class="recycle-btn" onclick="document.getElementById('modal-generador').classList.add('active')" title="Generar menú automático">⚡ Generar</button>
+        <button class="recycle-btn" onclick="(function(){
+  if(objetivos.cals) document.getElementById('gen-cals').value=objetivos.cals;
+  if(objetivos.prot) document.getElementById('gen-prot').value=objetivos.prot;
+  if(objetivos.hc)   document.getElementById('gen-hc').value=objetivos.hc;
+  if(objetivos.gras) document.getElementById('gen-gras').value=objetivos.gras;
+  document.getElementById('modal-generador').classList.add('active');
+})()" title="Generar menú automático">⚡ Generar</button>
         <button class="recycle-btn" onclick="abrirPlantillas()" title="Plantillas de semana">📋 Plantillas</button>
       </div>
 
       <div class="metrics-row">
-        <div class="metric-card"><div class="metric-lbl">Calorías/día</div><div class="metric-val" id="avg-cals">—</div><div class="metric-unit">kcal promedio</div></div>
+        <div class="metric-card"><div class="metric-lbl">Calorías/día</div><div class="metric-val" id="avg-cals">—</div><div class="metric-unit" id="avg-cals-unit">kcal promedio</div><div id="avg-cals-obj" style="font-size:9px;color:#9ca3af;margin-top:1px"></div></div>
         <div class="metric-card"><div class="metric-lbl">Hidratos</div><div class="metric-val" id="avg-hc">—</div><div class="metric-unit">% promedio</div></div>
         <div class="metric-card"><div class="metric-lbl">Proteínas</div><div class="metric-val" id="avg-prot">—</div><div class="metric-unit">% promedio</div></div>
         <div class="metric-card"><div class="metric-lbl">Grasas</div><div class="metric-val" id="avg-gras">—</div><div class="metric-unit">% promedio</div></div>
@@ -776,12 +817,29 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <div style="flex:2"><label class="form-lbl">Nombre</label><input type="text" class="form-input" id="cb-name" placeholder="Ej: Tortilla de patata"/></div>
       <div style="flex:none;width:90px"><label class="form-lbl">Raciones</label><input type="number" class="form-input" id="cb-raciones" value="1" min="1" oninput="recalcComida()"/></div>
     </div>
-    <div class="form-group"><label class="form-lbl">Categoría</label>
+    <div class="form-row" style="margin-bottom:12px">
+      <div><label class="form-lbl">Categoría</label>
       <select class="form-input" id="cb-cat" style="padding:9px 8px">
-        <option>Cereales y féculas</option><option>Carnes y aves</option><option>Pescados y mariscos</option>
-        <option selected>Huevos y lácteos</option><option>Legumbres</option><option>Verduras y hortalizas</option>
-        <option>Frutas</option><option>Frutos secos</option><option>Bebidas</option><option>Otros</option>
-      </select>
+        <option>Pasta y arroz</option>
+        <option>Carnes a la plancha</option>
+        <option>Carnes guisadas</option>
+        <option>Pescados y mariscos</option>
+        <option>Huevos</option>
+        <option>Legumbres</option>
+        <option>Ensaladas</option>
+        <option>Sopas y cremas</option>
+        <option>Verduras y guarniciones</option>
+        <option>Bocadillos y sandwiches</option>
+        <option>Pizzas y masas</option>
+        <option>Desayunos y batidos</option>
+        <option>Wraps y bowls</option>
+        <option>Tapas y snacks</option>
+        <option>Postres</option>
+        <option>Otro</option>
+      </select></div>
+      <div><label class="form-lbl">Elaboración</label>
+        <select class="form-input" id="cb-elab" style="padding:9px 8px"><option value="— Sin especificar —">— Sin especificar —</option><option value="Thermomix">Thermomix</option><option value="Airfryer">Airfryer</option><option value="Horno">Horno</option><option value="Sartén">Sartén</option><option value="Cazuela">Cazuela</option><option value="Olla a presión">Olla a presión</option><option value="Microondas">Microondas</option><option value="Vapor">Vapor</option><option value="Barbacoa">Barbacoa</option><option value="Sin cocción">Sin cocción</option><option value="Otro">Otro</option></select>
+      </div>
     </div>
     <label class="form-lbl">Ingredientes</label>
     <div class="ingr-row-wrap">
@@ -846,6 +904,61 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
   </div>
 </div>
 
+<!-- ── MODAL: OBJETIVOS NUTRICIONALES ── -->
+<div class="modal-wrap" id="modal-objetivos">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">🎯 Objetivos diarios</span>
+      <button class="modal-close" onclick="closeModal('modal-objetivos')">✕</button>
+    </div>
+    <p style="font-size:11px;color:#6b7280;margin-bottom:14px">Se usarán en el resumen del día y en el histórico mensual.</p>
+    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div><label class="form-lbl">kcal / día</label><input type="number" class="form-input" id="obj-cals" placeholder="Ej: 2000" min="0"/></div>
+      <div><label class="form-lbl">Proteínas (g)</label><input type="number" class="form-input" id="obj-prot" placeholder="Ej: 150" min="0"/></div>
+      <div><label class="form-lbl">Hidratos (g)</label><input type="number" class="form-input" id="obj-hc" placeholder="Ej: 200" min="0"/></div>
+      <div><label class="form-lbl">Grasas (g)</label><input type="number" class="form-input" id="obj-gras" placeholder="Ej: 65" min="0"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('modal-objetivos')">Cancelar</button>
+      <button class="btn-save" onclick="guardarObjetivos()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: COMPARTIR SEMANA ── -->
+<div class="modal-wrap" id="modal-compartir">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">📤 Compartir semana</span>
+      <button class="modal-close" onclick="closeModal('modal-compartir')">✕</button>
+    </div>
+    <div class="share-preview" id="share-preview-text"></div>
+    <div class="modal-foot" style="flex-wrap:wrap;gap:8px">
+      <button class="btn-cancel" onclick="closeModal('modal-compartir')">Cerrar</button>
+      <button class="btn-save" onclick="copiarResumenSemana()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">📋 Copiar texto</button>
+      <button class="btn-save" onclick="compartirSemana()">📤 Compartir</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── MODAL: NOTA DÍA ── -->
+<div class="modal-wrap" id="modal-nota-dia">
+  <div class="modal" style="max-width:340px">
+    <div class="modal-hdr">
+      <span class="modal-title">📝 Nota del día</span>
+      <button class="modal-close" onclick="closeModal('modal-nota-dia')">✕</button>
+    </div>
+    <p style="font-size:11px;color:#6b7280;margin-bottom:10px" id="nota-dia-label"></p>
+    <input type="text" class="form-input" id="nota-dia-input" placeholder="Ej: día de viaje, cena fuera..." maxlength="100"/>
+    <div class="modal-foot" style="margin-top:12px">
+      <button class="btn-cancel" onclick="closeModal('modal-nota-dia')">Cancelar</button>
+      <button class="btn-save" onclick="guardarNotaDia()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- ── MODAL: RECICLAR ── -->
 <div class="modal-wrap" id="modal-recycle">
   <div class="recycle-modal">
@@ -893,7 +1006,12 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
         <option value="Otro">⚪ Otro</option>
       </select>
     </div>
-    <div class="form-group"><label class="form-lbl">Tamaño de porción (opcional)</label><input type="text" class="form-input" id="pr-porcion" placeholder="Ej: 250g, 1 brik, 1 lata..."/></div>
+    <div class="form-row" style="margin-bottom:12px">
+      <div style="flex:1"><label class="form-lbl">Tamaño de porción (opcional)</label><input type="text" class="form-input" id="pr-porcion" placeholder="Ej: 250g, 1 brik, 1 lata..."/></div>
+      <div><label class="form-lbl">Elaboración <span style="font-weight:400;color:#9ca3af">(opcional)</span></label>
+        <select class="form-input" id="pr-elab" style="padding:9px 8px"><option value="— Sin especificar —">— Sin especificar —</option><option value="Thermomix">Thermomix</option><option value="Airfryer">Airfryer</option><option value="Horno">Horno</option><option value="Sartén">Sartén</option><option value="Cazuela">Cazuela</option><option value="Olla a presión">Olla a presión</option><option value="Microondas">Microondas</option><option value="Vapor">Vapor</option><option value="Barbacoa">Barbacoa</option><option value="Sin cocción">Sin cocción</option><option value="Otro">Otro</option></select>
+      </div>
+    </div>
     <div class="macro-grid">
       <div><label>HC (g)</label><input type="number" class="form-input" id="pr-hc" placeholder="30" min="0" oninput="updatePrHint()"/></div>
       <div><label>Prot (g)</label><input type="number" class="form-input" id="pr-prot" placeholder="5" min="0" oninput="updatePrHint()"/></div>
@@ -1068,14 +1186,13 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <div class="form-row" style="margin-bottom:10px">
         <div><label class="form-lbl">Nombre</label><input type="text" class="form-input" id="sc-edit-name"/></div>
         <div><label class="form-lbl">Categoría</label>
-          <select class="form-input" id="sc-edit-cat" style="padding:9px 8px">
-            <option>Cereales y féculas</option><option>Carnes y aves</option><option>Pescados y mariscos</option>
-            <option>Huevos y lácteos</option><option>Legumbres</option><option>Verduras y hortalizas</option>
-            <option>Frutas</option><option>Frutos secos</option><option>Bebidas</option><option>Otros</option>
-          </select>
+          <select class="form-input" id="sc-edit-cat" style="padding:9px 8px"><option>Pasta y arroz</option><option>Carnes a la plancha</option><option>Carnes guisadas</option><option>Pescados y mariscos</option><option>Huevos</option><option>Legumbres</option><option>Ensaladas</option><option>Sopas y cremas</option><option>Verduras y guarniciones</option><option>Bocadillos y sandwiches</option><option>Pizzas y masas</option><option>Desayunos y batidos</option><option>Wraps y bowls</option><option>Tapas y snacks</option><option>Postres</option><option>Otro</option></select>
         </div>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:6px">
+      <div class="form-row" style="margin-bottom:10px">
+        <div><label class="form-lbl">Elaboración</label>
+          <select class="form-input" id="sc-edit-elab" style="padding:9px 8px"><option value="— Sin especificar —">— Sin especificar —</option><option value="Thermomix">Thermomix</option><option value="Airfryer">Airfryer</option><option value="Horno">Horno</option><option value="Sartén">Sartén</option><option value="Cazuela">Cazuela</option><option value="Olla a presión">Olla a presión</option><option value="Microondas">Microondas</option><option value="Vapor">Vapor</option><option value="Barbacoa">Barbacoa</option><option value="Sin cocción">Sin cocción</option><option value="Otro">Otro</option></select>
+        </div>
         <div style="flex:none;width:80px"><label class="form-lbl">Raciones</label><input type="number" class="form-input" id="sc-raciones" value="1" min="1" oninput="recalcSheetComida()"/></div>
       </div>
     </div>
@@ -1113,6 +1230,21 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
     </button>
     <div class="nutrientes-panel" id="sc-nutrientes-panel"></div>
 
+    <div class="sheet-divider"></div>
+    <!-- RECETA -->
+    <button class="ver-mas-btn" id="sc-receta-btn" onclick="toggleRecetaPanel()">
+      <span>📋 Receta / Pasos</span><span class="vm-arrow">▼</span>
+    </button>
+    <div id="sc-receta-panel" style="display:none">
+      <div id="sc-pasos-view"></div>
+      <div id="sc-pasos-edit">
+        <div class="paso-add-row">
+          <input type="text" class="form-input" id="sc-paso-txt" placeholder="Describe el paso..." style="flex:1;min-width:120px"/>
+          <input type="number" class="form-input" id="sc-paso-min" placeholder="min" style="width:52px;flex:none" min="0"/>
+          <button class="btn-save" onclick="addPaso()" style="padding:9px 10px;white-space:nowrap">+ Paso</button>
+        </div>
+      </div>
+    </div>
     <div class="sheet-actions">
       <button class="sheet-btn-edit" onclick="saveSheetComida()">Guardar cambios</button>
       <button class="sheet-btn-delete" id="sc-delete-btn" onclick="deleteSheetComida()">Eliminar</button>
@@ -2213,6 +2345,8 @@ function render(){
   let tC=0,tH=0,tP=0,tG=0,dW=0;
   wd.forEach(d=>{if(d.length){const s=getDayStats(d);tC+=s.cals;tH+=s.hcPct;tP+=s.protPct;tG+=s.grasPct;dW++}});
   document.getElementById('avg-cals').textContent=dW?Math.round(tC/dW):'—';
+  const _objEl=document.getElementById('avg-cals-obj');
+  if(_objEl) _objEl.textContent=objetivos.cals?'obj: '+objetivos.cals+' kcal':'';
   document.getElementById('avg-hc').textContent=dW?Math.round(tH/dW)+'%':'—';
   document.getElementById('avg-prot').textContent=dW?Math.round(tP/dW)+'%':'—';
   document.getElementById('avg-gras').textContent=dW?Math.round(tG/dW)+'%':'—';
@@ -2228,12 +2362,12 @@ function renderListView(){
     card.className='day-card';card.id='day-'+dayIdx;
     let mHtml=meals.length===0?'<div class="empty-day">Sin comidas registradas aún</div>':
       meals.map((m,mi)=>{
-        const qtyTxt=m.qty?` <span class="meal-qty-txt">· ${m.qty}${m.qtyUnit||'g'}</span>`:'';
+        const qtyTxt=m.qty?` <span class="meal-qty-txt">· ${m.qty}${m.qtyUnit||'g'}</span>`:''; const elabTxt=elabBadge(m.elab||'');
         const notaTxt=m.nota?`<span class="meal-note">${m.nota}</span>`:'';
-        return`<div class="meal-row"><span class="meal-badge badge-${m.type}">${m.type}</span><span class="meal-name">${m.name}${qtyTxt}${notaTxt}</span><div class="meal-macros"><span class="mpill mpill-cal">${m.cals}</span><span class="mpill mpill-hc">HC ${m.hc}%</span><span class="mpill mpill-prot">P ${m.prot}%</span><span class="mpill mpill-gras">G ${m.gras}%</span></div><div class="meal-actions"><button class="ic-btn" onclick="editMeal(${dayIdx},${mi})">✏</button><button class="ic-btn" onclick="deleteMeal(${dayIdx},${mi})">✕</button></div></div>`;
+        return`<div class="meal-row"><span class="meal-badge badge-${m.type}">${m.type}</span><span class="meal-name">${m.name}${qtyTxt}${notaTxt}</span>${elabTxt}<div class="meal-macros"><span class="mpill mpill-cal">${m.cals}</span><span class="mpill mpill-hc">HC ${m.hc}%</span><span class="mpill mpill-prot">P ${m.prot}%</span><span class="mpill mpill-gras">G ${m.gras}%</span></div><div class="meal-actions"><button class="ic-btn" onclick="editMeal(${dayIdx},${mi})">✏</button><button class="ic-btn" onclick="deleteMeal(${dayIdx},${mi})">✕</button></div></div>`;
       }).join('');
     const bHtml=meals.length?`<div class="macro-bar-wrap"><div class="mbar-top"><span class="mbar-lbl">Distribución del día</span><span class="mbar-kcal">${s.cals} kcal</span></div><div class="mbar-track"><div class="mbar-hc bar-seg" style="width:${s.hcPct}%"></div><div class="mbar-prot bar-seg" style="width:${s.protPct}%"></div><div class="mbar-gras bar-seg" style="width:${s.grasPct}%"></div></div><div class="mbar-legend"><span class="mbar-leg"><span class="mbar-dot" style="background:#f59e0b"></span>HC ${s.hcPct}%</span><span class="mbar-leg"><span class="mbar-dot" style="background:#059669"></span>Prot ${s.protPct}%</span><span class="mbar-leg"><span class="mbar-dot" style="background:#f97316"></span>G ${s.grasPct}%</span></div></div>`:'';
-    card.innerHTML=`<div class="day-header" onclick="toggleDay(${dayIdx})"><div class="day-dot"></div><span class="day-name">${dayName}</span><span class="day-kcal">${s.cals>0?s.cals+' kcal':'Sin datos'}</span><span class="day-chevron">▾</span></div><div class="day-body">${mHtml}${bHtml}<div class="add-meal-row"><button class="add-meal-btn" onclick="openModal(${dayIdx})">＋ Añadir comida</button></div><div class="day-actions"><button class="day-action-btn" onclick="event.stopPropagation();abrirResumenDia(${dayIdx})">📊 Resumen</button><button class="day-action-btn" onclick="event.stopPropagation();duplicarDia(${dayIdx})">⧉ Duplicar</button></div></div>`;
+    const dayNota=(wd[dayIdx]&&wd[dayIdx]._nota)?`<div class="day-nota">📝 ${wd[dayIdx]._nota}</div>`:'';card.innerHTML=`<div class="day-header" onclick="toggleDay(${dayIdx})"><div class="day-dot"></div><span class="day-name">${dayName}</span><span class="day-kcal" style="${(()=>{if(!s.cals||!objetivos.cals)return'';const r=s.cals/objetivos.cals;return r>1.1?'background:#fee2e2;color:#dc2626;border-color:#fca5a5':r>=0.85?'background:#ecfdf5;color:#065f46;border-color:#a7f3d0':'background:#fffbeb;color:#92400e;border-color:#fde68a';})()}">${s.cals>0?s.cals+' kcal':'Sin datos'}</span><span class="day-chevron">▾</span></div>${dayNota}<div class="day-body">${mHtml}${bHtml}${renderObjetivosProgreso(meals)}<div class="add-meal-row"><button class="add-meal-btn" onclick="openModal(${dayIdx})">＋ Añadir comida</button></div><div class="day-actions"><button class="day-action-btn" onclick="event.stopPropagation();abrirResumenDia(${dayIdx})">📊 Resumen</button><button class="day-action-btn" onclick="event.stopPropagation();duplicarDia(${dayIdx})">⧉ Duplicar</button><button class="day-action-btn" onclick="editarNotaDia(${dayIdx},event)">📝 Nota</button></div></div>`;
     grid.appendChild(card);
     if(window._openDays.has(dayIdx))card.classList.add('open');
   });
@@ -2533,9 +2667,11 @@ function openProductoModal(editIdx){
     document.getElementById('pr-cat').value=p.compracat||'🛍 Otros';
     document.getElementById('pr-super').value=p.supermercado||'';
     document.getElementById('pr-porcion').value=p.porcion||'';
+    document.getElementById('pr-elab').value=p.elab||'— Sin especificar —';
   }else{
     document.getElementById('producto-title').textContent='Nuevo producto';
     ['pr-name','pr-cals','pr-hc','pr-prot','pr-gras','pr-porcion'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('pr-elab').value='— Sin especificar —';
     document.getElementById('pr-super').value='';
     document.getElementById('pr-cat').value='🧴 Conservas y salsas';
   }
@@ -2605,7 +2741,8 @@ function saveProducto(){
     const el=document.getElementById('pr-'+k);
     if(el&&el.value!=='')micro[k]=parseFloat(el.value)||0;
   });
-  const p={name,cals,hc:hcPct,prot:protPct,gras:grasPct,hcG:hc,protG:prot,grasG:gras,cat:'Otros',compracat,supermercado,porcion,...micro,_isProducto:true};
+  const prElab=(()=>{const v=document.getElementById('pr-elab').value;return v!=='— Sin especificar —'?v:''})();
+  const p={name,cals,hc:hcPct,prot:protPct,gras:grasPct,hcG:hc,protG:prot,grasG:gras,cat:'Otros',compracat,supermercado,porcion,elab:prElab,...micro,_isProducto:true};
   if(editingPrIdx!==null)misProductos[editingPrIdx]=p;
   else misProductos.push(p);
   saveAll();
@@ -2711,12 +2848,13 @@ function renderProductosList(q){
 function openComidaBuilder(){
   cbList=[];cbSelected=null;
   document.getElementById('cb-name').value='';
-  document.getElementById('cb-cat').value='Huevos y lácteos';
+  document.getElementById('cb-cat').value='Pasta y arroz';
   document.getElementById('cb-raciones').value=1;
   document.getElementById('cb-search').value='';
   document.getElementById('cb-qty').value='';
   document.getElementById('cb-unit').value='g';
   hideUdHint('cb-ud-hint');
+  document.getElementById('cb-elab').value='— Sin especificar —';
   document.getElementById('cb-results').style.display='none';
   renderCbList();recalcComida();
   document.getElementById('modal-builder').classList.add('active');
@@ -2747,6 +2885,7 @@ function selectCbIngr(f){
   } else {
     document.getElementById('cb-unit').value='g';
   hideUdHint('cb-ud-hint');
+  document.getElementById('cb-elab').value='— Sin especificar —';
     document.getElementById('cb-qty').placeholder='100';
     hideUdHint('cb-ud-hint');
   }
@@ -2829,7 +2968,8 @@ function saveComida(){
   if(!cbList.length){alert('Añade al menos un ingrediente.');return;}
   const cat=document.getElementById('cb-cat').value;
   const t=calcTotals();
-  misComidas.push({name,cals:t.cals,hc:t.hc,prot:t.prot,gras:t.gras,cat,ingredientes:cbList.map(f=>({name:f.name,qty:f.qty,unit:f.unit}))});
+  const elab=document.getElementById('cb-elab').value;
+  misComidas.push({name,cals:t.cals,hc:t.hc,prot:t.prot,gras:t.gras,cat,elab:elab!=='— Sin especificar —'?elab:'',ingredientes:cbList.map(f=>({name:f.name,qty:f.qty,unit:f.unit})),pasos:[]});
   saveAll();
   closeModal('modal-builder');
   renderCustomList(document.getElementById('custom-search').value);
@@ -3114,11 +3254,20 @@ function renderEvolucion(){
     const yLines=buildYLines(W,H,PAD,maxCals);
     const bars=buildEvolSVG(puntos,'avgCals','#059669',maxCals,W,H,PAD);
     const xLbls=buildXLabels(puntos,W,H,PAD);
+    // Línea de objetivo si está configurado
+    let objLine='';
+    if(objetivos.cals&&objetivos.cals>0){
+      const objY=H-PAD-((objetivos.cals/maxCals)*(H-PAD*2));
+      if(objY>PAD&&objY<H-PAD){
+        objLine=`<line x1="${PAD}" y1="${objY.toFixed(1)}" x2="${W-PAD}" y2="${objY.toFixed(1)}" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.7"/>
+          <text x="${W-PAD+2}" y="${(objY+3).toFixed(1)}" font-size="7" fill="#dc2626" font-weight="600">${objetivos.cals}</text>`;
+      }
+    }
     html+=`<div style="margin-bottom:4px">
-      <div style="font-size:10px;font-weight:600;color:#374151;margin-bottom:6px">🔥 kcal por ${evolGranularity==='dias'?'día':'semana'}</div>
+      <div style="font-size:10px;font-weight:600;color:#374151;margin-bottom:6px">🔥 kcal por ${evolGranularity==='dias'?'día':'semana'}${objetivos.cals?' <span style="font-size:9px;color:#dc2626;font-weight:400">— objetivo: '+objetivos.cals+'</span>':''}</div>
       <div class="evol-svg-wrap">
         <svg width="${W}" height="${H+14}" viewBox="0 0 ${W} ${H+14}" style="overflow:visible">
-          ${yLines}${bars}${xLbls}
+          ${yLines}${bars}${objLine}${xLbls}
         </svg>
       </div>
     </div>`;
@@ -3176,7 +3325,7 @@ function renderHistorico(){
   html+=`<div class="hist-section">
     <div class="hist-section-title">📈 Resumen del período <span style="font-weight:400;color:#9ca3af;text-transform:none;letter-spacing:0">(${totalDias} días con datos)</span></div>
     <div class="hist-cards">
-      <div class="hist-card"><div class="hist-card-lbl">kcal / día</div><div class="hist-card-val">${avgCals}</div><div class="hist-card-sub">media diaria</div></div>
+      <div class="hist-card"><div class="hist-card-lbl">kcal / día</div><div class="hist-card-val" style="${objetivos.cals?(avgCals>objetivos.cals*1.1?'color:#dc2626':avgCals>=objetivos.cals*0.85?'color:#059669':'color:#d97706'):''}">${avgCals}${objetivos.cals?'<div style="font-size:10px;color:#9ca3af;font-weight:400;margin-top:1px">obj: '+objetivos.cals+'</div>':''}</div><div class="hist-card-sub">media diaria</div></div>
       <div class="hist-card"><div class="hist-card-lbl">Hidratos</div><div class="hist-card-val" style="color:#d97706">${avgHc}%</div><div class="hist-card-sub">media diaria</div></div>
       <div class="hist-card"><div class="hist-card-lbl">Proteínas</div><div class="hist-card-val" style="color:#059669">${avgProt}%</div><div class="hist-card-sub">media diaria</div></div>
       <div class="hist-card"><div class="hist-card-lbl">Grasas</div><div class="hist-card-val" style="color:#f97316">${avgGras}%</div><div class="hist-card-sub">media diaria</div></div>
@@ -3491,7 +3640,14 @@ function openSheetComida(f){
   document.getElementById('sc-name').textContent=f.name;
   document.getElementById('sc-cat').textContent=f.cat||'—';
   document.getElementById('sc-edit-name').value=f.name;
-  document.getElementById('sc-edit-cat').value=f.cat||'Otros';
+  document.getElementById('sc-edit-cat').value=f.cat||'Otro';
+  document.getElementById('sc-edit-elab').value=f.elab||'— Sin especificar —';
+  // Cargar pasos
+  scPasos=[...(f.pasos||[])];
+  // Reset receta panel
+  const rpBtn=document.getElementById('sc-receta-btn');
+  const rpPanel=document.getElementById('sc-receta-panel');
+  if(rpBtn){rpBtn.classList.remove('open');rpPanel.style.display='none';rpBtn.querySelector('span:first-child').textContent='📋 Receta / Pasos';}
   document.getElementById('sc-raciones').value=1;
   document.getElementById('sc-ingr-search').value='';
   document.getElementById('sc-ingr-qty').value='';
@@ -3699,6 +3855,8 @@ function saveSheetComida(){
   const updated={
     name,
     cat:document.getElementById('sc-edit-cat').value,
+    elab:(()=>{const v=document.getElementById('sc-edit-elab').value;return v!=='— Sin especificar —'?v:''})(),
+    pasos:[...scPasos],
     cals,hc,prot,gras,
     ingredientes:scIngrList.map(f=>({name:f.name,qty:f.qty,unit:f.unit}))
   };
@@ -4106,6 +4264,194 @@ function generateFromMenu(){
 }
 
 
+// ════════════════════════════════════════
+// OBJETIVOS NUTRICIONALES
+// ════════════════════════════════════════
+let objetivos = {cals:0, prot:0, hc:0, gras:0};
+
+function abrirObjetivos(){
+  document.getElementById('obj-cals').value = objetivos.cals||'';
+  document.getElementById('obj-prot').value = objetivos.prot||'';
+  document.getElementById('obj-hc').value   = objetivos.hc||'';
+  document.getElementById('obj-gras').value = objetivos.gras||'';
+  document.getElementById('modal-objetivos').classList.add('active');
+}
+
+function guardarObjetivos(){
+  objetivos = {
+    cals: parseInt(document.getElementById('obj-cals').value)||0,
+    prot: parseInt(document.getElementById('obj-prot').value)||0,
+    hc:   parseInt(document.getElementById('obj-hc').value)||0,
+    gras: parseInt(document.getElementById('obj-gras').value)||0,
+  };
+  saveAll();
+  closeModal('modal-objetivos');
+  render();
+}
+
+function renderObjetivosProgreso(meals){
+  if(!objetivos.cals) return '';
+  const s = getDayStats(meals);
+  const hcG  = Math.round(s.cals * s.hcPct  / 100 / 4);
+  const protG = Math.round(s.cals * s.protPct / 100 / 4);
+  const grasG = Math.round(s.cals * s.grasPct / 100 / 9);
+
+  function bar(val, obj, color, label){
+    if(!obj) return '';
+    const pct = Math.min(110, Math.round(val/obj*100));
+    const barColor = pct>=100?'#059669':pct>=70?color:'#fca5a5';
+    return '<div class="obj-progress-row">' +
+      '<span class="obj-progress-lbl" style="color:'+barColor+'">'+label+'</span>' +
+      '<div class="obj-progress-track"><div class="obj-progress-fill" style="width:'+Math.min(100,pct)+'%;background:'+barColor+'"></div></div>' +
+      '<span class="obj-progress-val">'+val+'/'+(obj)+(label==='kcal'?'':'g')+' ('+pct+'%)</span>' +
+      '</div>';
+  }
+
+  return '<div class="obj-progress" style="margin:8px 15px 0">' +
+    bar(s.cals, objetivos.cals, '#f59e0b', 'kcal') +
+    bar(protG,  objetivos.prot, '#059669', 'Prot.') +
+    bar(hcG,    objetivos.hc,   '#d97706', 'HC') +
+    bar(grasG,  objetivos.gras, '#f97316', 'Grasas') +
+    '</div>';
+}
+
+// ════════════════════════════════════════
+// NOTA DE DÍA
+// ════════════════════════════════════════
+function editarNotaDia(dayIdx, event){
+  event.stopPropagation();
+  const wd = getWeekData(currentWeekOffset);
+  window._notaDayIdx = dayIdx;
+  document.getElementById('nota-dia-label').textContent = DAYS[dayIdx];
+  document.getElementById('nota-dia-input').value = wd[dayIdx]._nota||'';
+  document.getElementById('modal-nota-dia').classList.add('active');
+  setTimeout(()=>document.getElementById('nota-dia-input').focus(), 100);
+}
+function guardarNotaDia(){
+  const wd = getWeekData(currentWeekOffset);
+  wd[window._notaDayIdx]._nota = document.getElementById('nota-dia-input').value.trim();
+  saveAll(); render();
+  closeModal('modal-nota-dia');
+}
+
+// ════════════════════════════════════════
+// ELABORACIÓN — helpers
+// ════════════════════════════════════════
+const ELAB_ICONS = {'Thermomix': '🤖', 'Airfryer': '💨', 'Horno': '🔥', 'Sartén': '🍳', 'Cazuela': '🫕', 'Olla a presión': '⏱', 'Microondas': '📡', 'Vapor': '♨️', 'Barbacoa': '🔥', 'Sin cocción': '🥗', 'Otro': '🍴'};
+
+function elabBadge(elab){
+  if(!elab || elab === '— Sin especificar —') return '';
+  const icon = ELAB_ICONS[elab] || '🍴';
+  return '<span class="elab-badge">'+icon+' '+elab+'</span>';
+}
+
+// ════════════════════════════════════════
+// RECETA CON PASOS
+// ════════════════════════════════════════
+let scPasos = [];       // [{txt, min}]
+let scPasosRunning = null;  // índice del temporizador activo
+let scPasosInterval = null;
+let scPasosSegsLeft = 0;
+
+function toggleRecetaPanel(){
+  const btn   = document.getElementById('sc-receta-btn');
+  const panel = document.getElementById('sc-receta-panel');
+  const open  = btn.classList.contains('open');
+  btn.classList.toggle('open', !open);
+  panel.style.display = open ? 'none' : 'block';
+  btn.querySelector('span:first-child').textContent = open ? '📋 Receta / Pasos' : '📋 Ocultar receta';
+  if(!open) renderPasosView();
+}
+
+function renderPasosView(){
+  const el = document.getElementById('sc-pasos-view');
+  if(!scPasos.length){ el.innerHTML = ''; return; }
+  const rows = scPasos.map((p,i) => {
+    const timerHtml = p.min
+      ? '<span class="paso-timer" id="paso-timer-'+i+'" onclick="startPasoTimer('+i+','+p.min*60+')" title="Iniciar temporizador">⏱ '+p.min+'min</span>'
+      : '';
+    const delBtn = '<button class="ic-btn" style="margin-left:auto;flex-shrink:0" onclick="removePaso('+i+')">✕</button>';
+    return '<div class="paso-item"><div class="paso-num">'+(i+1)+'</div><div class="paso-text">'+p.txt+'</div>'+timerHtml+delBtn+'</div>';
+  }).join('');
+  el.innerHTML = rows;
+}
+
+function addPaso(){
+  const txt = document.getElementById('sc-paso-txt').value.trim();
+  if(!txt) return;
+  const min = parseInt(document.getElementById('sc-paso-min').value)||0;
+  scPasos.push({txt, min});
+  document.getElementById('sc-paso-txt').value = '';
+  document.getElementById('sc-paso-min').value = '';
+  renderPasosView();
+}
+
+function removePaso(i){
+  scPasos.splice(i,1);
+  renderPasosView();
+}
+
+function startPasoTimer(idx, secs){
+  if(scPasosInterval) clearInterval(scPasosInterval);
+  scPasosRunning = idx;
+  scPasosSegsLeft = secs;
+  updateTimerDisplay();
+  scPasosInterval = setInterval(()=>{
+    scPasosSegsLeft--;
+    updateTimerDisplay();
+    if(scPasosSegsLeft <= 0){
+      clearInterval(scPasosInterval);
+      scPasosInterval = null;
+      const el = document.getElementById('paso-timer-'+idx);
+      if(el){ el.textContent = '✓ Listo'; el.className = 'paso-timer done'; }
+      if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+        new Notification('MiMenú — Temporizador', {body: 'Paso '+(idx+1)+' completado'});
+      }
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay(){
+  const el = document.getElementById('paso-timer-'+scPasosRunning);
+  if(!el) return;
+  const m = Math.floor(scPasosSegsLeft/60);
+  const s = scPasosSegsLeft % 60;
+  el.textContent = '⏱ ' + m + ':' + String(s).padStart(2,'0');
+  el.className = 'paso-timer running';
+}
+
+// ════════════════════════════════════════
+// COMPARTIR SEMANA
+// ════════════════════════════════════════
+function abrirCompartir(){
+  const wd = getWeekData(currentWeekOffset);
+  const label = getWeekLabel(currentWeekOffset);
+  let txt = 'Menú ' + label + '\n\n';
+  DAYS.forEach((d,i)=>{
+    const meals = wd[i];
+    if(!meals||!meals.length){ txt += d + ': —\n'; return; }
+    const s = getDayStats(meals);
+    txt += d + ' (' + s.cals + ' kcal)\n';
+    meals.forEach(m => { txt += '  · ' + m.name + (m.nota?' ('+m.nota+')':'') + '\n'; });
+  });
+  document.getElementById('share-preview-text').innerText = txt;
+  document.getElementById('modal-compartir').classList.add('active');
+}
+
+function copiarResumenSemana(){
+  const txt = document.getElementById('share-preview-text').innerText;
+  navigator.clipboard.writeText(txt).then(()=>alert('✅ Copiado al portapapeles'));
+}
+
+function compartirSemana(){
+  const txt = document.getElementById('share-preview-text').innerText;
+  if(navigator.share){
+    navigator.share({title:'Mi menú semanal', text:txt});
+  } else {
+    copiarResumenSemana();
+  }
+}
+
 // ══════════════════════════════════════════
 // PERSISTENCIA localStorage
 // ══════════════════════════════════════════
@@ -4118,6 +4464,7 @@ function saveAll(){
     localStorage.setItem('mm_compraItems', JSON.stringify(compraItems));
     localStorage.setItem('mm_plantillas', JSON.stringify(plantillas));
     localStorage.setItem('mm_usageLog', JSON.stringify(usageLog));
+    localStorage.setItem('mm_objetivos', JSON.stringify(objetivos));
     localStorage.setItem('mm_favoritas', JSON.stringify([...favoritas]));
   }catch(e){console.warn('saveAll error:',e);}
 }
@@ -4130,6 +4477,7 @@ function loadAll(){
     const ci=localStorage.getItem('mm_compraItems');  if(ci)compraItems=JSON.parse(ci);
     const pl=localStorage.getItem('mm_plantillas');   if(pl)plantillas=JSON.parse(pl);
     const ul=localStorage.getItem('mm_usageLog');     if(ul)usageLog=JSON.parse(ul);
+    const ob=localStorage.getItem('mm_objetivos');    if(ob)objetivos=JSON.parse(ob);
     const fv=localStorage.getItem('mm_favoritas');    if(fv)favoritas=new Set(JSON.parse(fv));
   }catch(e){console.warn('loadAll error:',e);}
 }
