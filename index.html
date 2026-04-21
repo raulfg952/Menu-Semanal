@@ -474,6 +474,12 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 
 /* ── COMPARTIR ── */
 .share-preview{background:#f9fafb;border-radius:var(--rm);padding:12px;margin-bottom:12px;font-size:11px;color:#374151;border:1px solid #e5e7eb;max-height:200px;overflow-y:auto}
+
+/* ── FILTRO ELABORACIÓN ── */
+.elab-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.elab-chip{padding:4px 10px;border-radius:99px;font-size:11px;font-weight:500;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.elab-chip.active{background:#111827;border-color:#111827;color:#fff}
+.elab-chip:hover:not(.active){background:#f3f4f6}
 /* ── CHIPS FILTRO SUPERMERCADO ── */
 .super-chip{padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;cursor:pointer;transition:all .18s;white-space:nowrap;font-family:'DM Sans',sans-serif}
 .super-chip.active{color:#fff;border-color:transparent}
@@ -637,6 +643,7 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       </div>
       <div class="sec-panel active" id="sec-custom">
         <div id="historial-ranking"></div>
+        <div id="elab-chips-wrap" style="display:none"></div>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
           <div class="search-wrap" style="flex:1;margin-bottom:0"><span class="search-icon">&#128269;</span><input type="text" placeholder="Buscar comidas..." oninput="renderCustomList(this.value)" id="custom-search"/></div>
           <button class="fav-filter-btn" id="fav-filter-btn" onclick="toggleFavFilter()" title="Mostrar solo favoritas">⭐ Favoritas</button>
@@ -1191,6 +1198,7 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       </div>
       <button class="sheet-btn-close" onclick="closeSheet('sheet-comida')">✕</button>
     </div>
+    <div style="font-size:9px;color:#9ca3af;margin-bottom:4px;text-align:center" id="sc-raciones-lbl"></div>
     <div class="sheet-macros">
       <div class="sheet-macro"><div class="sheet-macro-lbl">kcal</div><div class="sheet-macro-val" id="sc-cals" style="color:#111827"></div><div class="sheet-macro-unit">por ración</div></div>
       <div class="sheet-macro"><div class="sheet-macro-lbl">Hidratos</div><div class="sheet-macro-val" id="sc-hc" style="color:#d97706"></div><div class="sheet-macro-unit">%</div></div>
@@ -2309,7 +2317,7 @@ function switchTab(tab){
   document.querySelectorAll('.ft-tab').forEach((b,i)=>b.classList.toggle('active',['menu','despensa','compra'][i]===tab));
   const subTabs=document.getElementById('menu-sub-tabs');
   if(subTabs) subTabs.style.display=tab==='menu'?'flex':'none';
-  if(tab==='despensa'){renderCustomList('');renderBuiltinList('');renderProductosList('');renderHistorialRanking();}
+  if(tab==='despensa'){renderCustomList('');renderBuiltinList('');renderProductosList('');renderHistorialRanking();renderElabChips();}
   if(tab==='compra')renderCompra();
 }
 
@@ -2987,7 +2995,8 @@ function saveComida(){
   const cat=document.getElementById('cb-cat').value;
   const t=calcTotals();
   const elab=document.getElementById('cb-elab').value;
-  misComidas.push({name,cals:t.cals,hc:t.hc,prot:t.prot,gras:t.gras,cat,elab:elab!=='— Sin especificar —'?elab:'',ingredientes:cbList.map(f=>({name:f.name,qty:f.qty,unit:f.unit})),pasos:[]});
+  const racSave=Math.max(1,parseInt(document.getElementById('cb-raciones').value)||1);
+  misComidas.push({name,cals:t.cals,hc:t.hc,prot:t.prot,gras:t.gras,cat,elab:elab!=='— Sin especificar —'?elab:'',raciones:racSave,ingredientes:cbList.map(f=>({name:f.name,qty:f.qty,unit:f.unit})),pasos:[]});
   saveAll();
   closeModal('modal-builder');
   renderCustomList(document.getElementById('custom-search').value);
@@ -3528,6 +3537,36 @@ function getUsageBadge(name){
   return parts.join('');
 }
 
+// ════════════════════════════════════════
+// FILTRO ELABORACIÓN EN COMIDAS
+// ════════════════════════════════════════
+let filtroElab = null;
+
+function renderElabChips(){
+  const wrap = document.getElementById('elab-chips-wrap');
+  if(!wrap) return;
+  // Recopilar elaboraciones usadas en misComidas
+  const usadas = new Set();
+  misComidas.forEach(f => { if(f.elab) usadas.add(f.elab); });
+  if(!usadas.size){ wrap.style.display='none'; wrap.innerHTML=''; return; }
+  wrap.style.display = 'flex';
+  wrap.className = 'elab-chips';
+  let html = '<button class="elab-chip'+(filtroElab===null?' active':'')+'" onclick="setFiltroElab(null)">Todas</button>';
+  const ELAB_ORDER = ['Thermomix','Airfryer','Horno','Sartén','Cazuela','Olla a presión','Microondas','Vapor','Barbacoa','Sin cocción','Otro'];
+  ELAB_ORDER.filter(e => usadas.has(e)).forEach(e => {
+    const icon = ELAB_ICONS[e]||'🍴';
+    const active = filtroElab===e?' active':'';
+    html += '<button class="elab-chip'+active+'" data-elab="'+e+'" onclick="setFiltroElab(this.dataset.elab)">'+icon+' '+e+'</button>';
+  });
+  wrap.innerHTML = html;
+}
+
+function setFiltroElab(elab){
+  filtroElab = elab;
+  renderElabChips();
+  renderCustomList(document.getElementById('custom-search').value);
+}
+
 // ── FAVORITAS ──
 let mostrarSoloFavoritas = false;
 
@@ -3546,12 +3585,14 @@ function toggleFavFilter(){
   renderCustomList(document.getElementById('custom-search').value);
 }
 function renderCustomList(q){
+  renderElabChips();
   if(!q) renderHistorialRanking();
   else { const el2=document.getElementById('historial-ranking'); if(el2) el2.innerHTML=''; }
   const el=document.getElementById('custom-list');
   let all=[...COMIDAS_BASE,...misComidas];
   if(q)all=all.filter(f=>f.name.toLowerCase().includes(q.toLowerCase()));
   if(mostrarSoloFavoritas) all=all.filter(f=>favoritas.has(f.name));
+  if(filtroElab) all=all.filter(f=>f.elab===filtroElab);
   if(!all.length){
     el.innerHTML=mostrarSoloFavoritas
       ?'<div class="empty-tbl">No tienes comidas favoritas todavía.<br><span style="font-size:10px">Pulsa ⭐ en cualquier comida para marcarla.</span></div>'
@@ -3569,6 +3610,9 @@ function renderCustomList(q){
   el.innerHTML=`<table class="food-tbl"><thead><tr>
     <th style="${thStyle()}" onclick="sortComidaBy('name')">Nombre ${sortArrow(s,'name')}</th>
     <th style="${thStyle()}" onclick="sortComidaBy('cat')">Cat. ${sortArrow(s,'cat')}</th>
+    <th colspan="4" style="font-size:8px;color:#9ca3af;font-weight:400;text-align:center;padding-bottom:2px">por ración</th>
+  </tr><tr>
+    <th></th><th></th>
     <th style="${thStyle()}" onclick="sortComidaBy('cals')">kcal ${sortArrow(s,'cals')}</th>
     <th style="${thStyle()}" onclick="sortComidaBy('hc')">HC% ${sortArrow(s,'hc')}</th>
     <th style="${thStyle()}" onclick="sortComidaBy('prot')">P% ${sortArrow(s,'prot')}</th>
@@ -3577,7 +3621,7 @@ function renderCustomList(q){
     sorted.map((f,si)=>{
       const mi=misComidas.findIndex(c=>c.name===f.name&&c.cals===f.cals);const isMia=mi>=0;
       const rid='_ca_'+si;window[rid]=f;
-      const MAX_INGR=3;
+      const MAX_INGR=2;
       const ingrs=(()=>{
         if(!f.ingredientes||!f.ingredientes.length) return '';
         const shown=f.ingredientes.slice(0,MAX_INGR);
@@ -3594,7 +3638,7 @@ function renderCustomList(q){
             <div>${f.name}${ingrs}</div>
           </div>
         </td>
-        <td style="color:#6b7280">${f.cat||'—'}</td><td>${f.cals}</td><td>${f.hc}%</td><td>${f.prot}%</td><td>${f.gras}%</td></tr>`;
+        <td style="color:#6b7280">${f.cat||'—'}</td><td>${f.cals}<span style="font-size:8px;color:#9ca3af;margin-left:2px">${(f.raciones&&f.raciones>1)?'×'+f.raciones:''}</span></td><td>${f.hc}%</td><td>${f.prot}%</td><td>${f.gras}%</td></tr>`;
     }).join('')
   }</tbody></table>`;
 }
@@ -3657,6 +3701,8 @@ function openSheetComida(f){
   scIngrSelected=null;
 
   document.getElementById('sc-name').textContent=f.name;
+  const _racLbl=document.getElementById('sc-raciones-lbl');
+  if(_racLbl) _racLbl.textContent=(f.raciones&&f.raciones>1)?f.raciones+' raciones — datos por ración':'Datos por ración';
   document.getElementById('sc-cat').textContent=f.cat||'—';
   document.getElementById('sc-edit-name').value=f.name;
   document.getElementById('sc-edit-cat').value=f.cat||'Otro';
@@ -3667,7 +3713,7 @@ function openSheetComida(f){
   const rpBtn=document.getElementById('sc-receta-btn');
   const rpPanel=document.getElementById('sc-receta-panel');
   if(rpBtn){rpBtn.classList.remove('open');rpPanel.style.display='none';rpBtn.querySelector('span:first-child').textContent='📋 Receta / Pasos';}
-  document.getElementById('sc-raciones').value=1;
+  document.getElementById('sc-raciones').value=f.raciones||1;
   document.getElementById('sc-ingr-search').value='';
   document.getElementById('sc-ingr-qty').value='';
   document.getElementById('sc-ingr-unit').value='g';
@@ -4517,20 +4563,25 @@ function calcularMacrosDeIngredientes(ingredientes, raciones){
   ingredientes.forEach(ingr => {
     const f = allIngr.find(a => a.name.toLowerCase() === ingr.name.toLowerCase());
     if(!f) return;
+    // calcFac devuelve el multiplicador basado en cantidad/unidad respecto a 100g
     const fac = calcFac({...f, qty: ingr.qty, unit: ingr.unit||'g'});
     tC += f.cals * fac;
+    // hc, prot, gras en DESPENSA son g/100g — multiplicamos directamente
     tH += f.hc * fac;
     tP += f.prot * fac;
     tG += f.gras * fac;
   });
   const r = Math.max(1, raciones||1);
   const cals = Math.round(tC / r);
-  const tot = tH*4 + tP*4 + tG*9 || 1;
+  const hcGRac  = tH / r;
+  const protGRac = tP / r;
+  const grasGRac = tG / r;
+  const tot = hcGRac*4 + protGRac*4 + grasGRac*9 || 1;
   return {
     cals,
-    hc:   Math.round(tH*4/tot*100),
-    prot: Math.round(tP*4/tot*100),
-    gras: Math.round(tG*9/tot*100),
+    hc:   Math.round(hcGRac*4/tot*100),
+    prot: Math.round(protGRac*4/tot*100),
+    gras: Math.round(grasGRac*9/tot*100),
   };
 }
 
