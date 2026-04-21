@@ -527,7 +527,7 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
           <button onclick="abrirObjetivos()" title="Objetivos nutricionales" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">🎯</button>
           <button onclick="abrirCompartir()" title="Compartir semana" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">📤</button>
           <button onclick="exportarDatos()" title="Exportar datos" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">⬇️</button>
-          <label title="Importar datos" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">⬆️<input type="file" accept=".json" onchange="importarDatos(event)" style="display:none"/></label>
+
         </div>
       </div>
       <div class="ft-tabs">
@@ -626,6 +626,7 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <div class="desp-header">
         <span class="desp-title" id="desp-title">Comidas</span>
         <button class="btn-primary" id="btn-nueva-comida" onclick="openComidaBuilder()">+ Nueva comida</button>
+        <label class="btn-primary" id="btn-importar-csv" style="cursor:pointer;display:flex;align-items:center;gap:4px">⬆️ Importar<input type="file" accept=".csv,.txt" onchange="importarCSVComidas(event)" style="display:none"/></label>
         <button class="btn-primary" id="btn-nuevo-alimento" onclick="openAlimentoModal()" style="display:none">+ Nuevo alimento</button>
         <button class="btn-primary" id="btn-nuevo-producto" onclick="openProductoModal()" style="display:none">+ Nuevo producto</button>
       </div>
@@ -954,6 +955,22 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
     <div class="modal-foot" style="margin-top:12px">
       <button class="btn-cancel" onclick="closeModal('modal-nota-dia')">Cancelar</button>
       <button class="btn-save" onclick="guardarNotaDia()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── MODAL: IMPORTAR CSV COMIDAS ── -->
+<div class="modal-wrap" id="modal-csv-result">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-hdr">
+      <span class="modal-title">⬆️ Importar comidas CSV</span>
+      <button class="modal-close" onclick="closeModal('modal-csv-result')">✕</button>
+    </div>
+    <div id="csv-result-body"></div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('modal-csv-result')">Cerrar</button>
+      <button class="btn-save" id="csv-confirm-btn" onclick="confirmarImportCSV()" style="display:none">✅ Importar</button>
     </div>
   </div>
 </div>
@@ -2317,6 +2334,7 @@ function switchSub(sub){
   const isProductos=(sub==='productos');
   document.getElementById('desp-title').textContent=isComidas?'Comidas':isAlimentos?'Mi despensa':'Productos';
   document.getElementById('btn-nueva-comida').style.display=isComidas?'':'none';
+  document.getElementById('btn-importar-csv').style.display=isComidas?'':'none';
   document.getElementById('btn-nuevo-alimento').style.display=isAlimentos?'':'none';
   document.getElementById('btn-nuevo-producto').style.display=isProductos?'':'none';
   if(isProductos)renderProductosList('');
@@ -3595,14 +3613,15 @@ function renderBuiltinList(q,reset){
   const rows=visible.map((f,si)=>{
     const ei=misAlimentos.findIndex(a=>a.name===f.name&&a.cals===f.cals);const isExtra=ei>=0;
     const rid='_ba_'+si;window[rid]=f;
-    return`<tr style="cursor:pointer" onclick="openSheetAlimento(window['${rid}'])"><td>${f.name}${isExtra?'<span class="src-badge">mío</span>':''}</td><td style="color:#6b7280">${f.cat}</td><td>${f.cals}</td><td>${f.hc}g</td><td>${f.prot}g</td><td>${f.gras}g</td></tr>`;
+    const equivTags=(()=>{let t='';if(f.pesoUd)t+=`<span style="font-size:8px;background:#eff6ff;color:#1e3a5f;padding:1px 5px;border-radius:99px;border:1px solid #bfdbfe;margin-left:3px;white-space:nowrap">1 ud≈${f.pesoUd}g</span>`;if(f.pesoCuchara)t+=`<span style="font-size:8px;background:#fdf4ff;color:#6b21a8;padding:1px 5px;border-radius:99px;border:1px solid #e9d5ff;margin-left:3px;white-space:nowrap">1 cuchara≈${f.pesoCuchara}g</span>`;return t;})();
+    return`<tr style="cursor:pointer" onclick="openSheetAlimento(window['${rid}'])"><td>${f.name}${equivTags}</td><td style="color:#6b7280">${f.cat}</td><td>${f.cals}</td><td>${f.hc}g</td><td>${f.prot}g</td><td>${f.gras}g</td></tr>`;
   }).join('');
   const showMore=remaining>0?`<tr><td colspan="6" style="text-align:center;padding:12px 0">
     <button onclick="builtinVisible+=100;renderBuiltinList(document.getElementById('builtin-search').value,false)" style="background:#f0fdf4;border:1.5px solid rgba(5,150,105,.25);color:var(--em-3);border-radius:var(--rm);padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
       Mostrar más (+${Math.min(remaining,100)} de ${remaining} restantes)
     </button>
   </td></tr>`:'';
-  el.innerHTML=`<div style="font-size:10px;color:#9ca3af;margin-bottom:6px;text-align:right">Mostrando ${visible.length} de ${sorted.length} alimentos</div>
+  el.innerHTML=`<div style="font-size:10px;color:#9ca3af;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><span>Mostrando ${visible.length} de ${sorted.length} alimentos</span><span style="background:#f3f4f6;border-radius:99px;padding:2px 8px;font-weight:500">Valores para 100g</span></div>
   <table class="food-tbl"><thead><tr>
     <th style="${thStyle()}" onclick="sortAlimentoBy('name')">Nombre ${sortArrow(s,'name')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('cat')">Categoría ${sortArrow(s,'cat')}</th>
@@ -4450,6 +4469,181 @@ function compartirSemana(){
   } else {
     copiarResumenSemana();
   }
+}
+
+// ════════════════════════════════════════
+// IMPORTAR COMIDAS DESDE CSV
+// ════════════════════════════════════════
+let _csvPreview = [];
+
+// Parsear ingredientes desde texto "Lentejas crudas:200g, Chorizo:50g"
+function parsearIngredientesCSV(txt){
+  if(!txt || !txt.trim()) return [];
+  const allIngr = getAllIngr();
+  const ingredientes = [];
+  const partes = txt.split('|');  // separador entre ingredientes
+  partes.forEach(parte => {
+    parte = parte.trim();
+    if(!parte) return;
+    // Formato: "Nombre del alimento:CANTIDADunidad"
+    const colonIdx = parte.lastIndexOf(':');
+    if(colonIdx < 0) return;
+    const nombre = parte.slice(0, colonIdx).trim();
+    const cantTxt = parte.slice(colonIdx + 1).trim();
+    // Parsear cantidad y unidad (ej: "200g", "2ud", "1cuchara", "150ml")
+    const match = cantTxt.match(/^([\d.]+)\s*(g|ml|ud|cuchara)?$/i);
+    const qty = match ? parseFloat(match[1]) : parseFloat(cantTxt) || 100;
+    const unit = match && match[2] ? match[2].toLowerCase() : 'g';
+    // Buscar alimento en la despensa (búsqueda flexible)
+    const found = allIngr.find(f =>
+      f.name.toLowerCase() === nombre.toLowerCase() ||
+      f.name.toLowerCase().includes(nombre.toLowerCase()) ||
+      nombre.toLowerCase().includes(f.name.toLowerCase().split(' ')[0])
+    );
+    if(found){
+      ingredientes.push({name: found.name, qty, unit});
+    } else {
+      // Incluir igualmente aunque no esté en la despensa
+      ingredientes.push({name: nombre, qty, unit});
+    }
+  });
+  return ingredientes;
+}
+
+// Calcular macros desde ingredientes si no se especifican
+function calcularMacrosDeIngredientes(ingredientes, raciones){
+  const allIngr = getAllIngr();
+  let tC=0, tH=0, tP=0, tG=0;
+  ingredientes.forEach(ingr => {
+    const f = allIngr.find(a => a.name.toLowerCase() === ingr.name.toLowerCase());
+    if(!f) return;
+    const fac = calcFac({...f, qty: ingr.qty, unit: ingr.unit||'g'});
+    tC += f.cals * fac;
+    tH += f.hc * fac;
+    tP += f.prot * fac;
+    tG += f.gras * fac;
+  });
+  const r = Math.max(1, raciones||1);
+  const cals = Math.round(tC / r);
+  const tot = tH*4 + tP*4 + tG*9 || 1;
+  return {
+    cals,
+    hc:   Math.round(tH*4/tot*100),
+    prot: Math.round(tP*4/tot*100),
+    gras: Math.round(tG*9/tot*100),
+  };
+}
+
+function importarCSVComidas(event){
+  const file = event.target.files[0];
+  event.target.value = '';
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+    if(!lines.length){ alert('El archivo está vacío.'); return; }
+
+    const sep = lines[0].includes(';') ? ';' : ',';
+    const headers = lines[0].split(sep).map(h => h.trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,''));
+
+    const idx = {
+      name:    headers.findIndex(h => h.includes('nombre') || h === 'name'),
+      cat:     headers.findIndex(h => h.includes('categ')),
+      cals:    headers.findIndex(h => h.includes('kcal') || h.includes('calor')),
+      hc:      headers.findIndex(h => h === 'hc' || h === 'hc%' || h.includes('hidrat')),
+      prot:    headers.findIndex(h => h === 'prot' || h === 'prot%' || h.includes('prote')),
+      gras:    headers.findIndex(h => h === 'grasas' || h === 'grasas%' || h.includes('gras')),
+      elab:    headers.findIndex(h => h.includes('elabor')),
+      raciones:headers.findIndex(h => h.includes('racion')),
+      ingrs:   headers.findIndex(h => h.includes('ingrediente')),
+    };
+
+    if(idx.name < 0){ alert('El CSV debe tener una columna "Nombre".'); return; }
+
+    _csvPreview = [];
+
+    lines.slice(1).forEach(line => {
+      if(!line.trim()) return;
+      // Split respetando comillas (para ingredientes con comas internas)
+      const cols = [];
+      let cur = '', inQuote = false;
+      for(let i=0; i<line.length; i++){
+        if(line[i]==='"') { inQuote=!inQuote; continue; }
+        if(line[i]===sep && !inQuote){ cols.push(cur.trim()); cur=''; }
+        else cur += line[i];
+      }
+      cols.push(cur.trim());
+
+      const name = cols[idx.name]||'';
+      if(!name) return;
+
+      const raciones = idx.raciones >= 0 ? parseInt(cols[idx.raciones])||1 : 1;
+      const cat  = idx.cat  >= 0 ? cols[idx.cat]  : 'Otro';
+      const elab = idx.elab >= 0 ? cols[idx.elab] : '';
+
+      // Parsear ingredientes si existen
+      const ingredientes = idx.ingrs >= 0 ? parsearIngredientesCSV(cols[idx.ingrs]) : [];
+
+      // Si hay ingredientes y no hay macros explícitos, calcularlos
+      let cals = idx.cals >= 0 ? parseInt(cols[idx.cals])||0 : 0;
+      let hc   = idx.hc   >= 0 ? parseInt(cols[idx.hc])||0  : 0;
+      let prot = idx.prot >= 0 ? parseInt(cols[idx.prot])||0 : 0;
+      let gras = idx.gras >= 0 ? parseInt(cols[idx.gras])||0 : 0;
+
+      if(ingredientes.length && !cals){
+        const calc = calcularMacrosDeIngredientes(ingredientes, raciones);
+        cals = calc.cals; hc = calc.hc; prot = calc.prot; gras = calc.gras;
+      }
+
+      _csvPreview.push({name, cals, hc, prot, gras, cat, elab, raciones, ingredientes, pasos:[]});
+    });
+
+    if(!_csvPreview.length){ alert('No se encontraron comidas válidas en el archivo.'); return; }
+
+    const nuevas = _csvPreview.filter(p => !misComidas.some(c => c.name.toLowerCase() === p.name.toLowerCase()));
+
+    let html = '<div style="font-size:12px;margin-bottom:12px">Se encontraron <b>' + _csvPreview.length + ' comidas</b>:</div>';
+    html += '<div style="max-height:220px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:var(--rs);margin-bottom:10px">';
+    html += _csvPreview.map(p => {
+      const dup = misComidas.some(c => c.name.toLowerCase() === p.name.toLowerCase());
+      const ingrInfo = p.ingredientes.length
+        ? '<span style="font-size:9px;background:#f0fdf4;color:#065f46;border:1px solid #a7f3d0;padding:1px 5px;border-radius:99px">' + p.ingredientes.length + ' ingr.</span>'
+        : '';
+      return '<div style="display:flex;align-items:center;gap:5px;padding:6px 10px;border-bottom:1px solid #f9fafb;font-size:11px">' +
+        '<span style="flex:1">' + p.name + '</span>' +
+        ingrInfo +
+        '<span style="color:#9ca3af;flex-shrink:0">' + (p.cals||'—') + ' kcal</span>' +
+        (dup ? '<span style="font-size:9px;background:#fffbeb;color:#92400e;border:1px solid #fde68a;padding:1px 5px;border-radius:99px">dup.</span>' : '') +
+        '</div>';
+    }).join('');
+    html += '</div>';
+    if(_csvPreview.length > nuevas.length)
+      html += '<div style="font-size:10px;color:#9ca3af;margin-bottom:6px">⚠️ Las comidas duplicadas se omitirán.</div>';
+    html += '<div style="font-size:10px;color:#6b7280">Se importarán <b>' + nuevas.length + '</b> comidas nuevas.</div>';
+    if(idx.ingrs >= 0)
+      html += '<div style="font-size:10px;color:#059669;margin-top:4px">✓ Columna de ingredientes detectada — los macros se calcularán automáticamente si no están especificados.</div>';
+
+    document.getElementById('csv-result-body').innerHTML = html;
+    document.getElementById('csv-confirm-btn').style.display = nuevas.length ? '' : 'none';
+    document.getElementById('modal-csv-result').classList.add('active');
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function confirmarImportCSV(){
+  let importadas = 0;
+  _csvPreview.forEach(p => {
+    if(!misComidas.some(c => c.name.toLowerCase() === p.name.toLowerCase())){
+      misComidas.push(p);
+      importadas++;
+    }
+  });
+  _csvPreview = [];
+  saveAll();
+  closeModal('modal-csv-result');
+  renderCustomList(document.getElementById('custom-search').value);
+  alert('\u2705 ' + importadas + ' comidas importadas correctamente.');
 }
 
 // ══════════════════════════════════════════
