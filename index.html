@@ -77,6 +77,14 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 .day-name{font-size:13px;font-weight:600;color:#111827;flex:1;letter-spacing:-.1px}
 .day-kcal{font-size:11px;font-weight:500;color:#6b7280;background:#f9fafb;padding:3px 8px;border-radius:99px;border:1px solid #e5e7eb}
 .badge-editado{display:inline-flex;align-items:center;font-size:9px;font-weight:600;color:#7c3aed;background:#ede9fe;border:1px solid #c4b5fd;border-radius:99px;padding:1px 5px;margin-left:4px;letter-spacing:.2px;vertical-align:middle}
+.cat-info-btn{background:none;border:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0 0 0 4px;vertical-align:middle;line-height:1;transition:color .15s}
+.cat-info-btn:hover{color:#7c3aed}
+.cat-info-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6}
+.cat-info-row:last-child{border-bottom:none}
+.cat-info-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center}
+.cat-info-body{flex:1;min-width:0}
+.cat-info-name{font-size:12px;font-weight:600;color:#111827;margin-bottom:2px}
+.cat-info-desc{font-size:11px;color:#6b7280;line-height:1.4}
 .kcal-edit-btn{background:none;border:none;cursor:pointer;font-size:10px;color:#9ca3af;padding:0 2px;line-height:1;transition:color .15s;vertical-align:middle}
 .kcal-edit-btn:hover{color:#7c3aed}
 .kcal-override-row{display:flex;align-items:center;gap:6px;margin-top:8px;padding:8px 10px;background:#f5f3ff;border-radius:10px;border:1px solid #ddd6fe}
@@ -239,6 +247,7 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 .wrapper{position:relative;min-height:520px}
 .modal-wrap{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:20px 12px;overflow-y:auto;min-height:520px}
 .modal-wrap.active{display:flex;animation:fadeIn .2s ease}
+#modal-cat-info{z-index:300}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .modal{background:#fff;border-radius:20px;padding:20px;width:100%;max-width:480px;margin-bottom:20px;box-shadow:var(--shadow-lg);border:1px solid rgba(5,150,105,.1);animation:slideUp .25s ease both}
 @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -493,6 +502,29 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 .obj-progress-track{flex:1;height:8px;background:#f3f4f6;border-radius:99px;overflow:hidden}
 .obj-progress-fill{height:100%;border-radius:99px;transition:width .4s ease}
 .obj-progress-val{font-size:9px;color:#6b7280;width:60px;text-align:right;flex-shrink:0}
+/* ── FRECUENCIAS ── */
+.freq-rule-row{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid #f3f4f6}
+.freq-rule-row:last-child{border-bottom:none}
+.freq-rule-cat{font-size:11px;font-weight:500;color:#111827;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.freq-rule-tipo{font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;flex-shrink:0}
+.freq-tipo-min{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.freq-tipo-max{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
+.freq-rule-dias{font-size:11px;color:#6b7280;flex-shrink:0}
+.freq-rule-del{background:none;border:none;color:#d1d5db;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0}
+.freq-rule-del:hover{color:#ef4444}
+.freq-add-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.freq-add-row select,.freq-add-row input{font-size:11px;padding:6px 8px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#111827;font-family:'DM Sans',sans-serif}
+.freq-add-row input{width:48px}
+.freq-add-btn{background:var(--grad);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+/* frecuencias en el día */
+.freq-progress{margin:6px 15px 0;display:flex;flex-direction:column;gap:4px}
+.freq-progress-row{display:flex;align-items:center;gap:6px;font-size:10px}
+.freq-progress-icon{font-size:11px;flex-shrink:0}
+.freq-progress-label{flex:1;color:#374151;font-weight:500}
+.freq-progress-status{font-size:9px;font-weight:700;padding:1px 6px;border-radius:99px;flex-shrink:0}
+.freq-ok{background:#ecfdf5;color:#065f46}
+.freq-warn{background:#fff7ed;color:#9a3412}
+.freq-neutral{background:#f3f4f6;color:#6b7280}
 
 /* ── RECETA / PASOS ── */
 .paso-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f3f4f6;align-items:flex-start}
@@ -842,11 +874,18 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
     <div class="form-group"><label class="form-lbl">Nombre</label><input type="text" class="form-input" id="al-name" placeholder="Ej: Lentejas crudas"/></div>
     <div class="form-row" style="margin-bottom:12px">
       <div><label class="form-lbl">Calorías / 100g</label><input type="number" class="form-input" id="al-cals" placeholder="116" min="0"/></div>
-      <div><label class="form-lbl">Categoría</label>
+      <div><label class="form-lbl">Categoría <button class="cat-info-btn" onclick="openCatInfo()" title="¿Qué incluye cada categoría?">ⓘ</button></label>
         <select class="form-input" id="al-cat" style="padding:9px 8px">
-          <option>Cereales y féculas</option><option>Carnes y aves</option><option>Pescados y mariscos</option>
-          <option>Huevos y lácteos</option><option>Legumbres</option><option>Verduras y hortalizas</option>
-          <option>Frutas</option><option>Frutos secos</option><option>Bebidas</option><option selected>Otros</option>
+          <option>Verduras y hortalizas</option>
+          <option>Legumbres</option>
+          <option>Cereales y pasta</option>
+          <option>Carnes</option>
+          <option>Pescados y mariscos</option>
+          <option>Huevos y lácteos</option>
+          <option>Frutas</option>
+          <option>Frutos secos</option>
+          <option>Bebidas</option>
+          <option selected>Otros</option>
         </select>
       </div>
     </div>
@@ -875,24 +914,19 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <div style="flex:none;width:90px"><label class="form-lbl">Raciones</label><input type="number" class="form-input" id="cb-raciones" value="1" min="1" oninput="recalcComida()"/></div>
     </div>
     <div class="form-row" style="margin-bottom:12px">
-      <div><label class="form-lbl">Categoría</label>
+      <div><label class="form-lbl">Categoría <button class="cat-info-btn" onclick="openCatInfo()" title="¿Qué incluye cada categoría?">ⓘ</button></label>
       <select class="form-input" id="cb-cat" style="padding:9px 8px">
-        <option>Pasta y arroz</option>
-        <option>Carnes a la plancha</option>
-        <option>Carnes guisadas</option>
-        <option>Pescados y mariscos</option>
-        <option>Huevos</option>
+        <option>Verduras y hortalizas</option>
         <option>Legumbres</option>
-        <option>Ensaladas</option>
-        <option>Sopas y cremas</option>
-        <option>Verduras y guarniciones</option>
-        <option>Bocadillos y sandwiches</option>
-        <option>Pizzas y masas</option>
-        <option>Desayunos y batidos</option>
-        <option>Wraps y bowls</option>
-        <option>Tapas y snacks</option>
-        <option>Postres</option>
-        <option>Otro</option>
+        <option>Cereales y pasta</option>
+        <option>Carnes</option>
+        <option>Pescados y mariscos</option>
+        <option>Huevos y lácteos</option>
+        <option>Frutas</option>
+        <option>Desayunos</option>
+        <option>Guarniciones y fritos</option>
+        <option>Frutos secos</option>
+        <option>Otros</option>
       </select></div>
       <div><label class="form-lbl">Elaboración</label>
         <select class="form-input" id="cb-elab" style="padding:9px 8px"><option value="— Sin especificar —">— Sin especificar —</option><option value="Thermomix">Thermomix</option><option value="Airfryer">Airfryer</option><option value="Horno">Horno</option><option value="Sartén">Sartén</option><option value="Cazuela">Cazuela</option><option value="Olla a presión">Olla a presión</option><option value="Microondas">Microondas</option><option value="Vapor">Vapor</option><option value="Barbacoa">Barbacoa</option><option value="Sin cocción">Sin cocción</option><option value="Otro">Otro</option></select>
@@ -965,15 +999,33 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 <div class="modal-wrap" id="modal-objetivos">
   <div class="modal">
     <div class="modal-hdr">
-      <span class="modal-title">🎯 Objetivos diarios</span>
+      <span class="modal-title">🎯 Objetivos</span>
       <button class="modal-close" onclick="closeModal('modal-objetivos')">✕</button>
     </div>
     <p style="font-size:11px;color:#6b7280;margin-bottom:14px">Se usarán en el resumen del día y en el histórico mensual.</p>
-    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+    <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:8px">Nutrición diaria</div>
+    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
       <div><label class="form-lbl">kcal / día</label><input type="number" class="form-input" id="obj-cals" placeholder="Ej: 2000" min="0"/></div>
       <div><label class="form-lbl">Proteínas (g)</label><input type="number" class="form-input" id="obj-prot" placeholder="Ej: 150" min="0"/></div>
       <div><label class="form-lbl">Hidratos (g)</label><input type="number" class="form-input" id="obj-hc" placeholder="Ej: 200" min="0"/></div>
       <div><label class="form-lbl">Grasas (g)</label><input type="number" class="form-input" id="obj-gras" placeholder="Ej: 65" min="0"/></div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">Frecuencias semanales</div>
+    <p style="font-size:10px;color:#9ca3af;margin-bottom:10px">Ej: mínimo 2 días/semana de Legumbres, máximo 1 día de Pizzas.</p>
+    <div id="freq-rules-list"></div>
+    <div class="freq-add-row">
+      <select id="freq-new-cat">
+        <option>Verduras y hortalizas</option><option>Legumbres</option><option>Cereales y pasta</option>
+        <option>Carnes</option><option>Pescados y mariscos</option><option>Huevos y lácteos</option>
+        <option>Frutas</option><option>Desayunos</option><option>Frutos secos</option><option>Guarniciones y fritos</option><option>Otros</option>
+      </select>
+      <select id="freq-new-tipo">
+        <option value="min">mínimo</option>
+        <option value="max">máximo</option>
+      </select>
+      <input type="number" id="freq-new-dias" min="1" max="7" value="2" style="width:48px"/>
+      <span style="font-size:11px;color:#6b7280;align-self:center">días/sem</span>
+      <button class="freq-add-btn" onclick="addFreqRule()">+ Añadir</button>
     </div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal('modal-objetivos')">Cancelar</button>
@@ -998,6 +1050,19 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
   </div>
 </div>
 
+
+<!-- ── MODAL: INFO CATEGORÍAS ── -->
+<div class="modal-wrap" id="modal-cat-info">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">📚 Guía de categorías</span>
+      <button class="modal-close" onclick="closeModal('modal-cat-info')">✕</button>
+    </div>
+    <p style="font-size:11px;color:#6b7280;margin-bottom:12px">Qué incluye cada categoría para clasificar tus comidas y alimentos.</p>
+    <div id="cat-info-list"></div>
+    <div class="modal-foot"><button class="btn-cancel" onclick="closeModal('modal-cat-info')">Cerrar</button></div>
+  </div>
+</div>
 
 <!-- ── MODAL: NOTA DÍA ── -->
 <div class="modal-wrap" id="modal-nota-dia">
@@ -1036,11 +1101,21 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 <div class="modal-wrap" id="modal-recycle">
   <div class="recycle-modal">
     <div class="modal-hdr">
-      <span class="modal-title" style="font-family:'Playfair Display',serif;font-size:17px">Reciclar semana</span>
+      <span class="modal-title" style="font-family:'Playfair Display',serif;font-size:17px">Copiar semana</span>
       <button class="modal-close" onclick="closeModal('modal-recycle')">✕</button>
     </div>
-    <p style="font-size:11px;color:#6b7280;margin-bottom:12px">Copia el menú de otra semana a la actual.</p>
-    <div id="recycle-list"></div>
+    <!-- PASO 1: elegir origen -->
+    <div id="recycle-step1">
+      <p style="font-size:11px;color:#6b7280;margin-bottom:12px">¿Qué semana quieres copiar?</p>
+      <div id="recycle-list"></div>
+    </div>
+    <!-- PASO 2: elegir destino -->
+    <div id="recycle-step2" style="display:none">
+      <button onclick="recycleBackToStep1()" style="background:none;border:none;color:#6b7280;font-size:11px;cursor:pointer;padding:0;margin-bottom:12px;display:flex;align-items:center;gap:4px">‹ Volver</button>
+      <div id="recycle-origen-label" style="font-size:12px;font-weight:600;color:#111827;margin-bottom:4px"></div>
+      <p style="font-size:11px;color:#6b7280;margin-bottom:12px">¿A qué semana quieres copiarla?</p>
+      <div id="recycle-destino-list"></div>
+    </div>
     <div class="modal-foot"><button class="btn-cancel" onclick="closeModal('modal-recycle')">Cerrar</button></div>
   </div>
 </div>
@@ -1354,10 +1429,10 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <div class="sheet-edit-title">Editar alimento</div>
       <div class="form-row" style="margin-bottom:10px">
         <div><label class="form-lbl">Nombre</label><input type="text" class="form-input" id="sa-edit-name"/></div>
-        <div><label class="form-lbl">Categoría</label>
+        <div><label class="form-lbl">Categoría <button class="cat-info-btn" onclick="openCatInfo()" title="¿Qué incluye cada categoría?">ⓘ</button></label>
           <select class="form-input" id="sa-edit-cat" style="padding:9px 8px">
-            <option>Cereales y féculas</option><option>Carnes y aves</option><option>Pescados y mariscos</option>
-            <option>Huevos y lácteos</option><option>Legumbres</option><option>Verduras y hortalizas</option>
+            <option>Verduras y hortalizas</option><option>Legumbres</option><option>Cereales y pasta</option>
+            <option>Carnes</option><option>Pescados y mariscos</option><option>Huevos y lácteos</option>
             <option>Frutas</option><option>Frutos secos</option><option>Bebidas</option><option>Otros</option>
           </select>
         </div>
@@ -2319,7 +2394,6 @@ const DESPENSA=[
 const COMIDAS_BASE=[];
 let misAlimentos=[];
 // ── HISTORIAL DE USO ──
-let usageLog = [];   // [{name, date}]  date = ISO string
 let favoritas = new Set();  // Set de nombres de comidas favoritas
 let historialPeriodo = '4w';  // '4w' | 'all'
 let histPeriod = '6m';  // '6m' | '3m' | 'all'
@@ -2329,6 +2403,62 @@ let evolChartType = 'ambos';  // 'kcal' | 'macros' | 'ambos'
 let misComidas=[];
 let misProductos=[];
 let menuData={};
+let notasDia={};  // { "w0-3": "texto nota" }  key = weekKey-dayIndex
+
+// Iconos de categoría de comida — usados en frecuencias y análisis
+const CAT_ICONS={
+  'Verduras y hortalizas':'🥦','Legumbres':'🫘','Cereales y pasta':'🍝',
+  'Carnes':'🥩','Pescados y mariscos':'🐟','Huevos y lácteos':'🥚',
+  'Frutas':'🍎','Desayunos':'☕','Frutos secos':'🥜','Bebidas':'🥤','Guarniciones y fritos':'🍟','Otros':'🍴'
+};
+
+// Descripción de cada categoría — aparece en el popover ⓘ
+const CATS_INFO=[
+  {cat:'Verduras y hortalizas', icon:'🥦', desc:'Ensaladas, sopas y cremas de verdura, guarniciones, wok, verduras al horno o a la plancha.'},
+  {cat:'Legumbres',             icon:'🫘', desc:'Lentejas, garbanzos, alubias, guisantes, habas. Incluye potajes y guisos de legumbre.'},
+  {cat:'Cereales y pasta',      icon:'🍝', desc:'Pasta, arroz, pan, pizza, cuscús, quinoa, tortitas de arroz o maíz, cereales de desayuno.'},
+  {cat:'Carnes',                icon:'🥩', desc:'Pollo, ternera, cerdo, pavo, conejo. A la plancha, guisados, al horno o en salsa.'},
+  {cat:'Pescados y mariscos',   icon:'🐟', desc:'Pescado blanco y azul, marisco, sushi, conservas de atún o sardinas.'},
+  {cat:'Huevos y lácteos',      icon:'🥚', desc:'Huevos en cualquier preparación, tortilla, quiche, lácteos como yogur, queso o leche.'},
+  {cat:'Frutas',                icon:'🍎', desc:'Fruta fresca, macedonias, smoothies y batidos de fruta, compota.'},
+  {cat:'Desayunos',             icon:'☕', desc:'Desayunos compuestos (tostadas, porridge, granola), batidos de proteína, brunch.'},
+  {cat:'Frutos secos',          icon:'🥜', desc:'Almendras, nueces, anacardos, cacahuetes. Como snack o incorporados en recetas.'},
+  {cat:'Bebidas',               icon:'🥤', desc:'Zumos, batidos, infusiones, bebidas vegetales. Solo cuando se registran como comida.'},
+  {cat:'Guarniciones y fritos', icon:'🍟', desc:'Patatas fritas, croquetas, patatas bravas, tempura, rebozados, patatas al horno como acompañamiento.'},
+  {cat:'Otros',                 icon:'🍴', desc:'Tapas, snacks, postres, bocadillos, wraps y todo lo que no encaje en las anteriores.'},
+];
+
+// Mapeo de categorías antiguas a las nuevas unificadas
+const CAT_NORMALIZE_MAP={
+  'Pasta y arroz':'Cereales y pasta','Cereales y féculas':'Cereales y pasta',
+  'Carnes a la plancha':'Carnes','Carnes guisadas':'Carnes','Carnes y aves':'Carnes',
+  'Huevos':'Huevos y lácteos',
+  'Ensaladas':'Verduras y hortalizas','Verduras y guarniciones':'Verduras y hortalizas',
+  'Sopas y cremas':'Verduras y hortalizas',
+  'Desayunos y batidos':'Desayunos',
+  'Bocadillos y sandwiches':'Otros','Pizzas y masas':'Otros',
+  'Wraps y bowls':'Otros','Tapas y snacks':'Otros','Postres':'Otros',
+  'Otro':'Otros','Otro':'Otros',
+};
+function normalizarCat(cat){
+  return CAT_NORMALIZE_MAP[cat]||cat||'Otros';
+}
+
+function openCatInfo(){
+  const el=document.getElementById('cat-info-list');
+  if(el&&!el.children.length){
+    el.innerHTML=CATS_INFO.map(c=>`
+      <div class="cat-info-row">
+        <div class="cat-info-icon">${c.icon}</div>
+        <div class="cat-info-body">
+          <div class="cat-info-name">${c.cat}</div>
+          <div class="cat-info-desc">${c.desc}</div>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('modal-cat-info').classList.add('active');
+}
+
 let currentWeekOffset=0,currentMonthOffset=0;
 let currentEditDay=null,currentEditIndex=null;
 let editingAlIdx=null;
@@ -2357,7 +2487,11 @@ function getWeekShortLabel(o){
   return`${f(mon)} – ${f(sun)}`;
 }
 function getDayStats(meals){
-  const cals=meals.reduce((s,m)=>s+m.cals,0);
+  const cals=meals.reduce((s,m)=>{
+    // Si la comida tiene un override actualizado en misComidas, usarlo
+    const mc=misComidas.find(c=>c.name===m.name&&(c.cals===m.cals||c.kcalOverride===m.cals));
+    return s+(mc&&mc.kcalOverride!=null?mc.kcalOverride:m.cals);
+  },0);
   const hcC=meals.reduce((s,m)=>s+m.cals*m.hc/100,0);
   const prC=meals.reduce((s,m)=>s+m.cals*m.prot/100,0);
   const grC=meals.reduce((s,m)=>s+m.cals*m.gras/100,0);
@@ -2441,6 +2575,9 @@ function render(){
 function renderListView(){
   const wd=getWeekData(currentWeekOffset);
   const grid=document.getElementById('days-grid');grid.innerHTML='';
+  // Calcular progreso de frecuencias una sola vez para toda la semana
+  const _freqHtmlSemana=renderFrecuenciasProgreso(currentWeekOffset);
+
   DAYS.forEach((dayName,dayIdx)=>{
     const meals=wd[dayIdx],s=getDayStats(meals);
     const card=document.createElement('div');
@@ -2455,7 +2592,9 @@ function renderListView(){
         return`<div class="meal-row"><span class="meal-badge badge-${m.type}">${m.type}</span><span class="meal-name">${m.name}${qtyTxt}${notaTxt} ${editadoBadge}</span>${elabTxt}<div class="meal-macros"><span class="mpill mpill-cal">${m.cals}</span><span class="mpill mpill-hc">HC ${m.hc}%</span><span class="mpill mpill-prot">P ${m.prot}%</span><span class="mpill mpill-gras">G ${m.gras}%</span></div><div class="meal-actions"><button class="ic-btn" onclick="editMeal(${dayIdx},${mi})">✏</button><button class="ic-btn" onclick="deleteMeal(${dayIdx},${mi})">✕</button></div></div>`;
       }).join('');
     const bHtml=meals.length?`<div class="macro-bar-wrap"><div class="mbar-top"><span class="mbar-lbl">Distribución del día</span><span class="mbar-kcal">${s.cals} kcal</span></div><div class="mbar-track"><div class="mbar-hc bar-seg" style="width:${s.hcPct}%"></div><div class="mbar-prot bar-seg" style="width:${s.protPct}%"></div><div class="mbar-gras bar-seg" style="width:${s.grasPct}%"></div></div><div class="mbar-legend"><span class="mbar-leg"><span class="mbar-dot" style="background:#f59e0b"></span>HC ${s.hcPct}%</span><span class="mbar-leg"><span class="mbar-dot" style="background:#059669"></span>Prot ${s.protPct}%</span><span class="mbar-leg"><span class="mbar-dot" style="background:#f97316"></span>G ${s.grasPct}%</span></div></div>`:'';
-    const dayNota=(wd[dayIdx]&&wd[dayIdx]._nota)?`<div class="day-nota">📝 ${wd[dayIdx]._nota}</div>`:'';card.innerHTML=`<div class="day-header" onclick="toggleDay(${dayIdx})"><div class="day-dot"></div><span class="day-name">${dayName}</span><span class="day-kcal" style="${(()=>{if(!s.cals||!objetivos.cals)return'';const r=s.cals/objetivos.cals;return r>1.1?'background:#fee2e2;color:#dc2626;border-color:#fca5a5':r>=0.85?'background:#ecfdf5;color:#065f46;border-color:#a7f3d0':'background:#fffbeb;color:#92400e;border-color:#fde68a';})()}">${s.cals>0?s.cals+' kcal':'Sin datos'}</span><span class="day-chevron">▾</span></div>${dayNota}<div class="day-body">${mHtml}${bHtml}${renderObjetivosProgreso(meals)}<div class="add-meal-row"><button class="add-meal-btn" onclick="openModal(${dayIdx})">＋ Añadir comida</button></div><div class="day-actions"><button class="day-action-btn" onclick="event.stopPropagation();abrirResumenDia(${dayIdx})">📊 Resumen</button><button class="day-action-btn" onclick="event.stopPropagation();duplicarDia(${dayIdx})">⧉ Duplicar</button><button class="day-action-btn" onclick="editarNotaDia(${dayIdx},event)">📝 Nota</button></div></div>`;
+    const _notaKey=getWeekKey(currentWeekOffset)+'-'+dayIdx;
+    const dayNota=notasDia[_notaKey]?`<div class="day-nota">📝 ${notasDia[_notaKey]}</div>`:'';
+    card.innerHTML=`<div class="day-header" onclick="toggleDay(${dayIdx})"><div class="day-dot"></div><span class="day-name">${dayName}</span><span class="day-kcal" style="${(()=>{if(!s.cals||!objetivos.cals)return'';const r=s.cals/objetivos.cals;return r>1.1?'background:#fee2e2;color:#dc2626;border-color:#fca5a5':r>=0.85?'background:#ecfdf5;color:#065f46;border-color:#a7f3d0':'background:#fffbeb;color:#92400e;border-color:#fde68a';})()}">${s.cals>0?s.cals+' kcal':'Sin datos'}</span><span class="day-chevron">▾</span></div>${dayNota}<div class="day-body">${mHtml}${bHtml}${renderObjetivosProgreso(meals)}${_freqHtmlSemana}<div class="add-meal-row"><button class="add-meal-btn" onclick="openModal(${dayIdx})">＋ Añadir comida</button></div><div class="day-actions"><button class="day-action-btn" onclick="event.stopPropagation();abrirResumenDia(${dayIdx})">📊 Resumen</button><button class="day-action-btn" onclick="event.stopPropagation();duplicarDia(${dayIdx})">⧉ Duplicar</button><button class="day-action-btn" onclick="editarNotaDia(${dayIdx},event)">📝 Nota</button></div></div>`;
     grid.appendChild(card);
     if(window._openDays.has(dayIdx))card.classList.add('open');
   });
@@ -2496,14 +2635,17 @@ function renderCalView(){
     // Meal type cells
     MEAL_TYPES.forEach(mt=>{
       const td=document.createElement('td');
-      const mealIdx=meals.findIndex(m=>m.type===mt);
-      const meal=mealIdx>=0?meals[mealIdx]:null;
-      if(meal){
-        td.innerHTML=`<div class="week-cell has-meal">
-          <span class="week-cell-name" title="${meal.name}">${meal.name}</span>
-          <span class="week-cell-del" onclick="deleteMeal(${dayIdx},${mealIdx});event.stopPropagation()">✕</span>
-        </div>`;
-        td.querySelector('.week-cell').addEventListener('click',()=>editMeal(dayIdx,mealIdx));
+      const typeMeals=meals.map((m,i)=>({m,i})).filter(({m})=>m.type===mt);
+      if(typeMeals.length){
+        td.innerHTML=typeMeals.map(({m,i:mealIdx})=>`
+          <div class="week-cell has-meal" data-idx="${mealIdx}">
+            <span class="week-cell-name" title="${m.name}">${m.name}</span>
+            <span class="week-cell-del" onclick="deleteMeal(${dayIdx},${mealIdx});event.stopPropagation()">✕</span>
+          </div>`).join('');
+        td.querySelectorAll('.week-cell').forEach(cell=>{
+          const idx=parseInt(cell.dataset.idx);
+          cell.addEventListener('click',()=>editMeal(dayIdx,idx));
+        });
       }else{
         td.innerHTML=`<div class="week-cell empty" onclick="openModalWithType(${dayIdx},'${mt}')"><span>+</span></div>`;
       }
@@ -2547,6 +2689,7 @@ function openModal(dayIdx,editIdx){
   document.getElementById('modal-meal').classList.add('active');
 }
 
+searchFood._refs=[];
 function searchFood(){
   const q=document.getElementById('food-search').value.toLowerCase();
   const el=document.getElementById('search-results');
@@ -2555,15 +2698,15 @@ function searchFood(){
   matches.sort((a,b)=>(favoritas.has(b.name)?1:0)-(favoritas.has(a.name)?1:0));
   matches=matches.slice(0,7);
   if(!matches.length){el.style.display='none';return}
+  searchFood._refs=[];
   el.innerHTML=matches.map((f,i)=>{
     const isMia=misComidas.includes(f)||misAlimentos.includes(f);
     const isProducto=f._isProducto||misProductos.some(p=>p.name===f.name&&p.cals===f.cals);
     const badge=isProducto?'<span class="si-badge" style="background:#eff6ff;color:#1e3a5f;border:1px solid #bfdbfe">producto</span>':isMia?'<span class="si-badge">mío</span>':'';
     const info=isProducto?`${f.cals} kcal · HC ${f.hcG||0}g · P ${f.protG||0}g · G ${f.grasG||0}g${f.porcion?' · '+f.porcion:''}`:
       `${f.cals} kcal · HC ${f.hc}% · P ${f.prot}% · G ${f.gras}%`;
-    const rid='_sf_'+i; window[rid]=f;
-    const favMark=favoritas.has(f.name)?'⭐ ':'';
-    return`<div class="si" onclick="selectFood(window['${rid}'])"><div><div>${favMark}${f.name}</div><div class="si-info">${info}</div></div>${badge}</div>`;
+    const favMark=favoritas.has(f.name)?'⭐ ':''; searchFood._refs[i]=f;
+    return`<div class="si" onclick="selectFood(searchFood._refs[${i}])"><div><div>${favMark}${f.name}</div><div class="si-info">${info}</div></div>${badge}</div>`;
   }).join('');
   el.style.display='block';
 }
@@ -2587,7 +2730,8 @@ function scaleFromQty(){
   if(!baseFood)return;
   const qty=parseFloat(document.getElementById('meal-qty').value)||100;
   const unit=document.getElementById('meal-qty-unit').value;
-  document.getElementById('meal-cals').value=Math.round(baseFood.cals*(unit==='porc'?qty:qty/100));
+  const calBase=baseFood.kcalOverride!=null?baseFood.kcalOverride:baseFood.cals;
+  document.getElementById('meal-cals').value=Math.round(calBase*(unit==='porc'?qty:qty/100));
 }
 
 function updateMacroSum(){
@@ -2611,18 +2755,23 @@ function saveMeal(){
   const qtyUnit=document.getElementById('meal-qty-unit').value;
   if(!name){document.getElementById('food-search').focus();return}
   const wd=getWeekData(currentWeekOffset);
-  // Carry over ingredients and product info from baseFood
-  const ingredients=baseFood&&baseFood.ingredientes?baseFood.ingredientes:(baseFood&&baseFood._isProducto?null:null);
+  // Carry over ingredients, elab and product info from baseFood or original meal
+  const originalMeal=currentEditIndex!==null?wd[currentEditDay][currentEditIndex]:null;
+  const ingredients=baseFood&&baseFood.ingredientes?baseFood.ingredientes:null;
   const isProducto=baseFood&&baseFood._isProducto?true:false;
   const compracat=baseFood&&baseFood.compracat?baseFood.compracat:null;
   const porcion=baseFood&&baseFood.porcion?baseFood.porcion:null;
+  // elab: usar el de baseFood si es nuevo, preservar el del meal original si solo se edita
+  const elab=baseFood&&baseFood.elab?baseFood.elab:(originalMeal&&originalMeal.elab?originalMeal.elab:undefined);
+  // cat: usar el de baseFood si existe, si no el del meal original
+  const cat=baseFood&&baseFood.cat?baseFood.cat:(originalMeal&&originalMeal.cat?originalMeal.cat:undefined);
   const nota=document.getElementById('meal-nota').value.trim();
   const meal={name,type,cals,hc,prot,gras,qty,qtyUnit,ingredients,isProducto,compracat,porcion,nota:nota||undefined};
+  if(elab) meal.elab=elab;
+  if(cat) meal.cat=cat;
   if(currentEditIndex!==null)wd[currentEditDay][currentEditIndex]=meal;
-  else{
-    wd[currentEditDay].push(meal);
-    saveAll();
-  }
+  else wd[currentEditDay].push(meal);
+  saveAll();
   window._openDays.add(currentEditDay);
   closeModal('modal-meal');render();
 }
@@ -2671,11 +2820,12 @@ function saveAlimento(){
   const f={name,cals,hc,prot,gras,cat,custom:true};
   if(editingAlIdx!==null)misAlimentos[editingAlIdx]=f;
   else misAlimentos.push(f);
+  saveAll();
   closeModal('modal-alimento');
   renderBuiltinList(document.getElementById('builtin-search').value);
 }
 
-function deleteAlimento(idx){misAlimentos.splice(idx,1);renderBuiltinList(document.getElementById('builtin-search').value)}
+function deleteAlimento(idx){misAlimentos.splice(idx,1);saveAll();renderBuiltinList(document.getElementById('builtin-search').value)}
 
 // ── PRODUCTOS DE SUPERMERCADO ──
 let editingPrIdx=null;
@@ -2950,15 +3100,17 @@ function openComidaBuilder(){
   document.getElementById('modal-builder').classList.add('active');
 }
 
+searchCbIngr._refs=[];
 function searchCbIngr(){
   const q=document.getElementById('cb-search').value.trim().toLowerCase();
   const res=document.getElementById('cb-results');
   if(!q){res.style.display='none';return}
   const matches=getAllIngr().filter(f=>f.name.toLowerCase().includes(q)).slice(0,8);
   if(!matches.length){res.style.display='none';return}
+  searchCbIngr._refs=[];
   res.innerHTML=matches.map((f,i)=>{
-    const rid='_cb_'+i; window[rid]=f;
-    return`<div class="si" onclick="selectCbIngr(window['${rid}'])"><div><div>${f.name}</div><div class="si-info">${f.cals} kcal/100g · HC ${f.hc}g · P ${f.prot}g · G ${f.gras}g${f.pesoUd?' · <b>≈'+f.pesoUd+'g/ud</b>':''}${f.pesoCuchara?' · <b>≈'+f.pesoCuchara+'g/cuchara</b>':''}</div></div></div>`;
+    searchCbIngr._refs[i]=f;
+    return`<div class="si" onclick="selectCbIngr(searchCbIngr._refs[${i}])"><div><div>${f.name}</div><div class="si-info">${f.cals} kcal/100g · HC ${f.hc}g · P ${f.prot}g · G ${f.gras}g${f.pesoUd?' · <b>≈'+f.pesoUd+'g/ud</b>':''}${f.pesoCuchara?' · <b>≈'+f.pesoCuchara+'g/cuchara</b>':''}</div></div></div>`;
   }).join('');
   res.style.display='block';
 }
@@ -2972,10 +3124,13 @@ function selectCbIngr(f){
     document.getElementById('cb-qty').value='1';
     document.getElementById('cb-qty').placeholder='ud';
     showUdHint('cb-ud-hint', f.pesoUd);
+  } else if(f.pesoCuchara){
+    document.getElementById('cb-unit').value='cuchara';
+    document.getElementById('cb-qty').value='1';
+    document.getElementById('cb-qty').placeholder='cucharas';
+    showUdHint('cb-ud-hint', f.pesoCuchara, 'cuchara');
   } else {
     document.getElementById('cb-unit').value='g';
-  hideUdHint('cb-ud-hint');
-  document.getElementById('cb-elab').value='— Sin especificar —';
     document.getElementById('cb-qty').placeholder='100';
     hideUdHint('cb-ud-hint');
   }
@@ -3129,26 +3284,14 @@ function setHistPeriod(p){
 }
 
 function getHistoricoData(){
-  // Recopilar todos los días con datos de menuData
-  const dias=[];
-  Object.keys(menuData).forEach(wk=>{
-    const wOffset=parseInt(wk.slice(1));
-    const mon=getMonday(wOffset);
-    menuData[wk].forEach((dayMeals,di)=>{
-      if(!dayMeals.length) return;
-      const fecha=new Date(mon);
-      fecha.setDate(mon.getDate()+di);
-      const s=getDayStats(dayMeals);
-      // Calcular gramos reales de macros
-      const hcG=s.cals*s.hcPct/100/4;
-      const protG=s.cals*s.protPct/100/4;
-      const grasG=s.cals*s.grasPct/100/9;
-      dias.push({fecha,cals:s.cals,hcPct:s.hcPct,protPct:s.protPct,grasPct:s.grasPct,hcG,protG,grasG,meals:dayMeals});
-    });
+  const all=getAllDaysWithMeals();
+  const dias=all.map(({fecha,meals})=>{
+    const s=getDayStats(meals);
+    const hcG=s.cals*s.hcPct/100/4;
+    const protG=s.cals*s.protPct/100/4;
+    const grasG=s.cals*s.grasPct/100/9;
+    return{fecha,cals:s.cals,hcPct:s.hcPct,protPct:s.protPct,grasPct:s.grasPct,hcG,protG,grasG,meals};
   });
-  dias.sort((a,b)=>a.fecha-b.fecha);
-
-  // Filtrar por periodo
   const ahora=new Date();
   const cutoff=histPeriod==='6m'?new Date(ahora-182*86400000):histPeriod==='3m'?new Date(ahora-91*86400000):null;
   return cutoff?dias.filter(d=>d.fecha>=cutoff):dias;
@@ -3183,7 +3326,7 @@ function agruparPorSemana(dias){
     const day=mon.getDay();
     mon.setDate(mon.getDate()-((day===0?7:day)-1));
     mon.setHours(0,0,0,0);
-    const k=mon.toISOString().slice(0,10);
+    const k=localDateKey(mon);
     if(!semanas[k]) semanas[k]={label:mon.toLocaleDateString('es-ES',{day:'numeric',month:'short'}),cals:0,hcPct:0,protPct:0,grasPct:0,n:0};
     semanas[k].cals+=d.cals;semanas[k].hcPct+=d.hcPct;semanas[k].protPct+=d.protPct;semanas[k].grasPct+=d.grasPct;semanas[k].n++;
   });
@@ -3530,6 +3673,21 @@ function renderHistorico(){
 // ════════════════════════════════════════
 // HISTÓRICO — ANÁLISIS
 // ════════════════════════════════════════
+// Helper: todos los días con comidas, sin filtro de período, ordenados por fecha
+function getAllDaysWithMeals(){
+  const all=[];
+  Object.keys(menuData).forEach(wk=>{
+    const wOffset=parseInt(wk.slice(1));
+    const mon=getMonday(wOffset);
+    menuData[wk].forEach((dayMeals,di)=>{
+      if(!dayMeals.length) return;
+      const fecha=new Date(mon);fecha.setDate(mon.getDate()+di);
+      all.push({fecha,meals:dayMeals,wk,di});
+    });
+  });
+  return all.sort((a,b)=>a.fecha-b.fecha);
+}
+
 function renderHistAnalisis(){
   const el=document.getElementById('historico-analisis');
   if(!el) return;
@@ -3567,27 +3725,60 @@ function renderHistAnalisis(){
   // ── DISTRIBUCIÓN POR CATEGORÍA ──
   const catCounts={};
   const catColors={
-    'Pasta y arroz':'#f59e0b','Carnes a la plancha':'#ef4444','Carnes guisadas':'#dc2626',
-    'Pescados y mariscos':'#3b82f6','Huevos':'#fbbf24','Legumbres':'#84cc16',
-    'Ensaladas':'#22c55e','Sopas y cremas':'#06b6d4','Verduras y guarniciones':'#10b981',
-    'Bocadillos y sandwiches':'#f97316','Pizzas y masas':'#e879f9','Desayunos y batidos':'#fb923c',
-    'Wraps y bowls':'#a78bfa','Tapas y snacks':'#facc15','Postres':'#f9a8d4','Otro':'#9ca3af'
+    'Verduras y hortalizas':'#22c55e','Legumbres':'#84cc16','Cereales y pasta':'#f59e0b',
+    'Carnes':'#ef4444','Pescados y mariscos':'#3b82f6','Huevos y lácteos':'#fbbf24',
+    'Frutas':'#f97316','Desayunos':'#fb923c','Frutos secos':'#a78bfa',
+    'Bebidas':'#06b6d4','Guarniciones y fritos':'#f59e0b','Otros':'#9ca3af',
+    // Compatibilidad con categorías antiguas guardadas en datos
+    'Pasta y arroz':'#f59e0b','Carnes a la plancha':'#ef4444','Carnes guisadas':'#ef4444',
+    'Huevos':'#fbbf24','Ensaladas':'#22c55e','Sopas y cremas':'#06b6d4',
+    'Verduras y guarniciones':'#22c55e','Bocadillos y sandwiches':'#f97316',
+    'Pizzas y masas':'#e879f9','Desayunos y batidos':'#fb923c','Wraps y bowls':'#a78bfa',
+    'Tapas y snacks':'#facc15','Postres':'#f9a8d4','Otro':'#9ca3af',
+    'Cereales y féculas':'#f59e0b','Carnes y aves':'#ef4444','Verduras y hortalizas':'#22c55e',
+    'Huevos y lácteos':'#fbbf24','Frutas':'#f97316','Frutos secos':'#a78bfa'
   };
   dias.forEach(d=>{
     d.meals.forEach(m=>{
       if(m.isProducto) return;
-      // buscar categoría en misComidas
-      const mc=misComidas.find(c=>c.name===m.name);
-      const cat=(mc&&mc.cat)||m.cat||'Otro';
+      // Buscar cat en todas las fuentes: meal guardado, misComidas, DESPENSA, misAlimentos
+      let cat=m.cat&&m.cat!=='Otro'?m.cat:null;
+      if(!cat){
+        const allFoods=[...misComidas,...misAlimentos,...DESPENSA];
+        const found=allFoods.find(c=>c.name===m.name);
+        cat=normalizarCat((found&&found.cat)||'Otros');
+      }
       catCounts[cat]=(catCounts[cat]||0)+1;
     });
   });
   const totalMeals=Object.values(catCounts).reduce((s,v)=>s+v,0)||1;
   const sortedCats=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]);
 
+  // Días reales por categoría (días únicos que tienen al menos 1 comida de esa cat)
+  const catDiasReales={};
+  const totalSemanas=dias.length>0?(()=>{
+    const fechas=dias.map(d=>d.fecha);
+    const ms=Math.min(...fechas.map(f=>f.getTime()));
+    const mx=Math.max(...fechas.map(f=>f.getTime()));
+    return Math.max(1,Math.round((mx-ms)/7/86400000)+1);
+  })():1;
+  dias.forEach(d=>{
+    const catsDelDia=new Set();
+    d.meals.forEach(m=>{
+      if(m.isProducto) return;
+      let cat=m.cat&&m.cat!=='Otro'?m.cat:null;
+      if(!cat){
+        const found=[...misComidas,...misAlimentos,...DESPENSA].find(c=>c.name===m.name);
+        cat=normalizarCat((found&&found.cat)||'Otros');
+      }
+      catsDelDia.add(cat);
+    });
+    catsDelDia.forEach(cat=>{catDiasReales[cat]=(catDiasReales[cat]||0)+1;});
+  });
+
   html+=`<div class="hist-chart-wrap">
-    <div class="hist-chart-title">🍽️ Reparto por categoría</div>
-    <div style="display:flex;gap:14px;align-items:center">
+    <div class="hist-chart-title">🍽️ Reparto por categoría <button class="cat-info-btn" onclick="openCatInfo()" title="¿Qué incluye cada categoría?">ⓘ</button></div>
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px">
       <div style="flex-shrink:0">${buildDonutSVG(sortedCats,catColors,totalMeals)}</div>
       <div class="donut-wrap" style="flex:1;min-width:0">
         ${sortedCats.slice(0,8).map(([cat,n])=>{
@@ -3603,39 +3794,278 @@ function renderHistAnalisis(){
         ${sortedCats.length>8?`<div style="font-size:9px;color:#9ca3af;margin-top:2px">+${sortedCats.length-8} categorías más</div>`:''}
       </div>
     </div>
+    <div style="border-top:1px solid #f3f4f6;padding-top:10px">
+      <div style="font-size:10px;font-weight:600;color:#6b7280;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Días con al menos 1 comida de cada grupo</div>
+      ${Object.entries(catDiasReales).sort((a,b)=>b[1]-a[1]).map(([cat,dias])=>{
+        const color=catColors[cat]||'#9ca3af';
+        const diasPorSemana=(dias/totalSemanas).toFixed(1);
+        // Buscar si hay objetivo de frecuencia para esta categoría
+        const regla=(objetivos.frecuencias||[]).find(r=>r.cat===cat);
+        const objTxt=regla?`<span style="font-size:9px;color:${regla.tipo==='min'?(dias/totalSemanas>=regla.dias?'#059669':'#dc2626'):'#6b7280'}">${regla.tipo==='min'?'mín':'máx'} ${regla.dias}d/sem</span>`:'';
+        return`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #f9fafb">
+          <div style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0"></div>
+          <span style="font-size:11px;color:#374151;flex:1">${cat}</span>
+          ${objTxt}
+          <span style="font-size:11px;font-weight:600;color:#111827;flex-shrink:0">${dias}d</span>
+          <span style="font-size:9px;color:#9ca3af;flex-shrink:0;width:42px;text-align:right">${diasPorSemana}/sem</span>
+        </div>`;
+      }).join('')}
+    </div>
   </div>`;
 
-  // ── TOP 10 COMIDAS MÁS REPETIDAS ──
-  const counts=getUsageCounts(histPeriod==='all'?'all':'4w');
-  // Para 6m y 3m usamos all (getUsageCounts solo tiene 4w/all, pero filtramos manualmente)
+  // ── DISTRIBUCIÓN CALÓRICA POR TIPO DE COMIDA ──
+  const tipoKcal={desayuno:0,almuerzo:0,merienda:0,cena:0,otro:0};
+  const tipoCount={desayuno:0,almuerzo:0,merienda:0,cena:0,otro:0};
+  dias.forEach(d=>{
+    d.meals.forEach(m=>{
+      const t=(['desayuno','almuerzo','merienda','cena'].includes(m.type))?m.type:'otro';
+      tipoKcal[t]+=m.cals;
+      tipoCount[t]++;
+    });
+  });
+  const totalKcalTipos=Object.values(tipoKcal).reduce((s,v)=>s+v,0)||1;
+  const tipoColors={desayuno:'#fb923c',almuerzo:'#059669',merienda:'#a78bfa',cena:'#3b82f6',otro:'#9ca3af'};
+  const tipoLabels={desayuno:'Desayuno',almuerzo:'Almuerzo',merienda:'Merienda',cena:'Cena',otro:'Otros'};
+  const tiposConDatos=Object.entries(tipoKcal).filter(([,v])=>v>0);
+  if(tiposConDatos.length){
+    html+=`<div class="hist-chart-wrap">
+      <div class="hist-chart-title">🕐 Distribución calórica por momento del día</div>
+      ${tiposConDatos.map(([tipo,kcal])=>{
+        const pct=Math.round(kcal/totalKcalTipos*100);
+        const avgKcalDia=tipoCount[tipo]?Math.round(kcal/dias.length):0;
+        return`<div class="donut-row" style="margin-bottom:6px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${tipoColors[tipo]};flex-shrink:0"></div>
+          <span class="donut-label">${tipoLabels[tipo]}</span>
+          <div class="donut-bar-track"><div class="donut-bar-fill" style="width:${pct}%;background:${tipoColors[tipo]}"></div></div>
+          <span class="donut-pct">${pct}%</span>
+          <span style="font-size:9px;color:#9ca3af;flex-shrink:0;width:50px;text-align:right">~${avgKcalDia} kcal/d</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  // ── TOP 10 COMIDAS CON TENDENCIA ──
   const countsFiltered={};
   dias.forEach(d=>{
     d.meals.forEach(m=>{
       if(!m.isProducto&&m.name) countsFiltered[m.name]=(countsFiltered[m.name]||0)+1;
     });
   });
+
+  // Calcular también para el período anterior de igual duración
+  const allDiasSinFiltro=getAllDaysWithMeals();
+
+  const ahora=new Date();
+  const cutoff=histPeriod==='6m'?new Date(ahora-182*86400000):histPeriod==='3m'?new Date(ahora-91*86400000):null;
+  const periodoAnterior={};
+  if(cutoff){
+    const duracion=cutoff?ahora-cutoff:null;
+    const cutoffAnterior=duracion?new Date(cutoff-duracion):null;
+    if(cutoffAnterior){
+      allDiasSinFiltro.filter(d=>d.fecha>=cutoffAnterior&&d.fecha<cutoff).forEach(d=>{
+        d.meals.forEach(m=>{
+          if(!m.isProducto&&m.name) periodoAnterior[m.name]=(periodoAnterior[m.name]||0)+1;
+        });
+      });
+    }
+  }
+
   const top10=Object.entries(countsFiltered).sort((a,b)=>b[1]-a[1]).slice(0,10);
   const maxN=top10[0]?top10[0][1]:1;
   const medals=['🥇','🥈','🥉','4','5','6','7','8','9','10'];
 
   html+=`<div class="hist-chart-wrap">
     <div class="hist-chart-title">🔥 Top comidas del período</div>
-    ${top10.length?top10.map(([name,n],i)=>`
-      <div class="top-meal-row">
+    ${top10.length?top10.map(([name,n],i)=>{
+      let tendencia='';
+      if(cutoff&&periodoAnterior[name]!==undefined){
+        const prev=periodoAnterior[name]||0;
+        if(n>prev) tendencia=`<span style="font-size:9px;color:#059669;font-weight:700">↑${n-prev}</span>`;
+        else if(n<prev) tendencia=`<span style="font-size:9px;color:#dc2626;font-weight:700">↓${prev-n}</span>`;
+        else tendencia=`<span style="font-size:9px;color:#9ca3af">=</span>`;
+      }
+      return`<div class="top-meal-row">
         <span class="top-meal-num">${medals[i]}</span>
         <span class="top-meal-name" title="${name}">${name}</span>
+        ${tendencia}
         <div class="top-meal-bar"><div class="top-meal-fill" style="width:${Math.round(n/maxN*100)}%"></div></div>
         <span class="top-meal-count">${n}×</span>
-      </div>`).join(''):'<div class="hist-empty">Sin datos</div>'}
+      </div>`;
+    }).join(''):'<div class="hist-empty">Sin datos</div>'}
+    ${cutoff?'':'<div style="font-size:9px;color:#9ca3af;margin-top:6px">Selecciona 3m o 6m para ver tendencia vs período anterior</div>'}
   </div>`;
+
+  // ── VARIEDAD / DIVERSIDAD ──
+  const totalComidas=Object.keys(countsFiltered).length;
+  const totalOcurrencias=Object.values(countsFiltered).reduce((s,v)=>s+v,0)||1;
+  const MIN_OCURRENCIAS=7;
+  const suficientesDatos=totalOcurrencias>=MIN_OCURRENCIAS;
+
+  // Concentración: qué % de comidas son los 3 platos más frecuentes
+  const top3sum=top10.slice(0,3).reduce((s,[,n])=>s+n,0);
+  const pctConcentracion=Math.round(top3sum/totalOcurrencias*100);
+
+  // Platos nuevos vs período anterior (solo si hay cutoff)
+  let platosNuevos=null;
+  if(cutoff&&Object.keys(periodoAnterior).length){
+    platosNuevos=Object.keys(countsFiltered).filter(name=>!periodoAnterior[name]).length;
+  }
+
+  let _variedadMsg='';
+  if(!suficientesDatos){
+    _variedadMsg=`<div style="font-size:11px;color:#9ca3af;font-style:italic;margin-top:4px">Registra al menos ${MIN_OCURRENCIAS} comidas para ver el análisis de variedad.</div>`;
+  } else {
+    const concentracionColor=pctConcentracion>=70?'#dc2626':pctConcentracion>=50?'#d97706':'#059669';
+    const concentracionTxt=pctConcentracion>=70?'Dieta muy repetitiva':pctConcentracion>=50?'Variedad moderada':'Buena variedad';
+    _variedadMsg=`
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+          <span style="font-size:10px;font-weight:600;color:#374151">Concentración en top 3 platos</span>
+          <span style="font-size:11px;font-weight:700;color:${concentracionColor}">${pctConcentracion}%</span>
+        </div>
+        <div style="height:7px;background:#f3f4f6;border-radius:99px;overflow:hidden">
+          <div style="height:100%;width:${pctConcentracion}%;background:${concentracionColor};border-radius:99px;transition:width .4s"></div>
+        </div>
+        <div style="font-size:10px;color:#6b7280;margin-top:4px">${concentracionTxt} — ${top10.slice(0,3).map(([n])=>n).join(', ')}</div>
+      </div>
+      ${platosNuevos!==null?`<div style="font-size:11px;color:#374151">
+        <span style="font-weight:600;color:${platosNuevos>0?'#059669':'#9ca3af'}">${platosNuevos} plato${platosNuevos!==1?'s':''} nuevo${platosNuevos!==1?'s':''}</span>
+        que no comiste en el período anterior.
+      </div>`:''}`;
+  }
+
+  html+=`<div class="hist-chart-wrap">
+    <div class="hist-chart-title">🌈 Variedad alimentaria</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="background:#f9fafb;border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#111827">${totalComidas}</div>
+        <div style="font-size:10px;color:#6b7280;margin-top:2px">platos distintos</div>
+      </div>
+      <div style="background:#f9fafb;border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#111827">${totalOcurrencias}</div>
+        <div style="font-size:10px;color:#6b7280;margin-top:2px">comidas registradas</div>
+      </div>
+    </div>
+    ${_variedadMsg}
+  </div>`;
+
+  // ── MEJOR Y PEOR SEMANA ──
+  const semanas=Object.keys(menuData)
+    .filter(wk=>menuData[wk].some(d=>d.length>0))
+    .map(wk=>{
+      const off=parseInt(wk.slice(1));
+      const diasSem=[];
+      menuData[wk].forEach((dayMeals,di)=>{
+        if(!dayMeals.length) return;
+        const s=getDayStats(dayMeals);
+        diasSem.push(s.cals);
+      });
+      if(!diasSem.length) return null;
+      const avgCals=Math.round(diasSem.reduce((a,b)=>a+b,0)/diasSem.length);
+      const score=objetivos.cals?diasSem.reduce((s,c)=>s+Math.abs(c-objetivos.cals),0)/diasSem.length:null;
+      return{wk,off,avgCals,score,dias:diasSem.length,label:getWeekShortLabel(off)};
+    }).filter(Boolean);
+
+  // Filtrar por período usando fecha real, no offset relativo
+  const hoy=new Date();
+  const semFiltradas=semanas.filter(s=>{
+    const mon=getMonday(s.off);
+    if(histPeriod==='6m') return mon>=new Date(hoy-182*86400000);
+    if(histPeriod==='3m') return mon>=new Date(hoy-91*86400000);
+    return true;
+  });
+
+  if(semFiltradas.length>=2){
+    let mejor,peor;
+    if(objetivos.cals){
+      mejor=semFiltradas.reduce((a,b)=>a.score<b.score?a:b);
+      peor=semFiltradas.reduce((a,b)=>a.score>b.score?a:b);
+    } else {
+      mejor=semFiltradas.reduce((a,b)=>b.dias>a.dias?b:a); // más días registrados
+      peor=semFiltradas.reduce((a,b)=>b.dias<a.dias?b:a);
+    }
+    html+=`<div class="hist-chart-wrap">
+      <div class="hist-chart-title">🏆 Mejor y peor semana del período</div>
+      ${objetivos.cals?'':'<div style="font-size:10px;color:#9ca3af;margin-bottom:8px">Configura tu objetivo de kcal para comparar por adherencia.</div>'}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:#f0fdf4;border:1px solid #a7f3d0;border-radius:10px;padding:10px">
+          <div style="font-size:9px;font-weight:700;color:#059669;margin-bottom:4px">🏅 MEJOR</div>
+          <div style="font-size:11px;font-weight:600;color:#111827">${mejor.label}</div>
+          <div style="font-size:10px;color:#374151;margin-top:4px">${mejor.avgCals} kcal/día · ${mejor.dias}d registrados</div>
+          ${objetivos.cals?`<div style="font-size:9px;color:#059669;margin-top:2px">Desviación: ~${Math.round(mejor.score)} kcal</div>`:''}
+        </div>
+        <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:10px">
+          <div style="font-size:9px;font-weight:700;color:#dc2626;margin-bottom:4px">📉 PEOR</div>
+          <div style="font-size:11px;font-weight:600;color:#111827">${peor.label}</div>
+          <div style="font-size:10px;color:#374151;margin-top:4px">${peor.avgCals} kcal/día · ${peor.dias}d registrados</div>
+          ${objetivos.cals?`<div style="font-size:9px;color:#dc2626;margin-top:2px">Desviación: ~${Math.round(peor.score)} kcal</div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ── CUMPLIMIENTO DE FRECUENCIAS ──
+  const reglas=objetivos.frecuencias||[];
+  if(reglas.length){
+    // Calcular por semana cuántos días cumplió cada categoría
+    const semanas=Object.keys(menuData)
+      .filter(wk=>menuData[wk].some(d=>d.length>0))
+      .sort((a,b)=>parseInt(a.slice(1))-parseInt(b.slice(1)));
+
+    // Filtrar semanas según histPeriod
+    const ahoraOff=0;
+    const semFiltered=semanas.filter(wk=>{
+      const off=parseInt(wk.slice(1));
+      if(histPeriod==='6m') return off>=ahoraOff-26;
+      if(histPeriod==='3m') return off>=ahoraOff-13;
+      return true;
+    }).slice(-12); // máx 12 semanas en la vista
+
+    if(semFiltered.length){
+
+      const freqRows=reglas.map(r=>{
+        const icon=CAT_ICONS[r.cat]||'🍴';
+        const tipo=r.tipo==='min'?'mín':'máx';
+        // Para cada semana, calcular días con esa categoría
+        const semData=semFiltered.map(wk=>{
+          const catDias=calcFreqSemana(parseInt(wk.slice(1)));
+          const actual=catDias[r.cat]||0;
+          const ok=r.tipo==='min'?actual>=r.dias:actual<=r.dias;
+          return{actual,ok};
+        });
+        const cumplidas=semData.filter(s=>s.ok).length;
+        const pctCumpl=Math.round(cumplidas/semData.length*100);
+        const dots=semData.map(s=>`<span style="width:10px;height:10px;border-radius:50%;background:${s.ok?'#059669':'#fca5a5'};display:inline-block;flex-shrink:0" title="${s.actual} días"></span>`).join('');
+
+        return`<div style="padding:8px 0;border-bottom:1px solid #f3f4f6">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <span style="font-size:13px">${icon}</span>
+            <span style="font-size:11px;font-weight:600;flex:1">${r.cat}</span>
+            <span style="font-size:9px;color:#6b7280">${tipo} ${r.dias}d/sem</span>
+            <span style="font-size:10px;font-weight:700;color:${pctCumpl>=70?'#059669':pctCumpl>=40?'#d97706':'#dc2626'}">${pctCumpl}%</span>
+          </div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">${dots}</div>
+        </div>`;
+      }).join('');
+
+      html+=`<div class="hist-chart-wrap">
+        <div class="hist-chart-title">✅ Cumplimiento de frecuencias <span style="font-weight:400;color:#9ca3af">(últimas ${semFiltered.length} semanas)</span></div>
+        <div style="display:flex;gap:12px;margin-bottom:8px;font-size:9px;color:#6b7280">
+          <span>🟢 Semana cumplida</span><span>🔴 Semana incumplida</span>
+        </div>
+        ${freqRows}
+      </div>`;
+    }
+  }
 
   el.innerHTML=html;
 }
 
 function buildRadarChart(datos, objetivoDatos){
-  const W=200,CX=100,CY=100,R=70;
+  const W=200,CX=100,CY=105,R=68;
   const n=datos.length;
   const angleStep=(Math.PI*2)/n;
+  // Con 3 puntos: rotar para que HC quede arriba y Prot/Grasas queden simétricas abajo
   const startAngle=-Math.PI/2;
 
   // Grid circles
@@ -3682,15 +4112,25 @@ function buildRadarChart(datos, objetivoDatos){
     objPoly=`<polygon points="${objPts}" fill="rgba(124,58,237,0.08)" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4,2" stroke-linejoin="round"/>`;
   }
 
-  return`<div class="radar-wrap"><svg width="${W}" height="${W}" viewBox="0 0 ${W} ${W}">${grid}${objPoly}${realPoly}${labels}</svg></div>`;
+  return`<div class="radar-wrap"><svg width="${W}" height="220" viewBox="0 0 ${W} 220">${grid}${objPoly}${realPoly}${labels}</svg></div>`;
 }
 
 function buildDonutSVG(cats, colors, total){
   const R=36,r=22,CX=44,CY=44,W=88;
+  // Si solo hay una categoría, dibujar círculo completo directamente
+  if(cats.length===1){
+    const color=colors[cats[0][0]]||'#9ca3af';
+    return`<svg width="${W}" height="${W}" viewBox="0 0 ${W} ${W}">
+      <circle cx="${CX}" cy="${CY}" r="${R}" fill="${color}" opacity="0.9"/>
+      <circle cx="${CX}" cy="${CY}" r="${r-2}" fill="#fff"/>
+    </svg>`;
+  }
   let startAngle=-Math.PI/2;
   const slices=cats.slice(0,8).map(([cat,n])=>{
     const angle=(n/total)*Math.PI*2;
-    const endAngle=startAngle+angle;
+    // Evitar arco de exactamente 2π (bug SVG)
+    const safeAngle=Math.min(angle, Math.PI*2-0.001);
+    const endAngle=startAngle+safeAngle;
     const x1=(CX+R*Math.cos(startAngle)).toFixed(2);
     const y1=(CY+R*Math.sin(startAngle)).toFixed(2);
     const x2=(CX+R*Math.cos(endAngle)).toFixed(2);
@@ -3699,7 +4139,7 @@ function buildDonutSVG(cats, colors, total){
     const yi1=(CY+r*Math.sin(endAngle)).toFixed(2);
     const xi2=(CX+r*Math.cos(startAngle)).toFixed(2);
     const yi2=(CY+r*Math.sin(startAngle)).toFixed(2);
-    const large=angle>Math.PI?1:0;
+    const large=safeAngle>Math.PI?1:0;
     const color=colors[cat]||'#9ca3af';
     const path=`M${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2} L${xi1},${yi1} A${r},${r} 0 ${large},0 ${xi2},${yi2} Z`;
     startAngle=endAngle;
@@ -3711,6 +4151,14 @@ function buildDonutSVG(cats, colors, total){
 // ════════════════════════════════════════
 // HISTÓRICO — CALENDARIO (HEATMAP)
 // ════════════════════════════════════════
+// Helper: YYYY-MM-DD en hora local (evita desfase UTC)
+function localDateKey(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  return`${y}-${m}-${dd}`;
+}
+
 function renderHistCalendario(){
   const el=document.getElementById('historico-calendario');
   if(!el) return;
@@ -3737,7 +4185,7 @@ function renderHistCalendario(){
   // Indexar por YYYY-MM-DD
   const byDate={};
   todosLosDias.forEach(d=>{
-    const k=d.fecha.toISOString().slice(0,10);
+    const k=localDateKey(d.fecha);
     byDate[k]=d.cals;
   });
 
@@ -3807,7 +4255,7 @@ function renderHistCalendario(){
   // Cells
   const cells=weeks.map((week,wi)=>
     week.map((day,di)=>{
-      const k=day.toISOString().slice(0,10);
+      const k=localDateKey(day);
       const cals=byDate[k]||0;
       const color=cellColor(cals);
       const x=40+wi*STEP;
@@ -3849,21 +4297,21 @@ function renderHistCalendario(){
 }
 
 function getUsageCounts(periodo){
-  // Contar directamente desde menuData para que siempre sea exacto
   const ahora=new Date();
   const cutoff=periodo==='4w'?new Date(ahora-28*24*3600*1000):null;
   const counts={};
   Object.keys(menuData).forEach(wk=>{
     const wOffset=parseInt(wk.slice(1));
-    if(cutoff){
-      // Calcular fecha aproximada de la semana
-      const mon=getMonday(wOffset);
-      const sun=new Date(mon);sun.setDate(mon.getDate()+6);
-      if(sun<cutoff) return; // semana fuera del periodo
-    }
+    const mon=getMonday(wOffset);
     const days=menuData[wk];
     if(!days) return;
-    days.forEach(dayMeals=>{
+    days.forEach((dayMeals,di)=>{
+      if(!dayMeals.length) return;
+      if(cutoff){
+        const fecha=new Date(mon);
+        fecha.setDate(mon.getDate()+di);
+        if(fecha<cutoff) return; // filtrar día a día, no por semana
+      }
       dayMeals.forEach(meal=>{
         if(!meal.isProducto&&meal.name){
           counts[meal.name]=(counts[meal.name]||0)+1;
@@ -3927,9 +4375,23 @@ function setHistorialPeriodo(p){
 }
 
 function getUsageBadge(name){
-  const n4w=getUsageCounts('4w')[name]||0;
-  const nAll=getUsageCounts('all')[name]||0;
+  const counts=getUsageCounts('all');
+  const nAll=counts[name]||0;
   if(!nAll) return '';
+  // Para 4w, reutilizar los datos ya calculados filtrando por fecha
+  const ahora=new Date();
+  const cutoff4w=new Date(ahora-28*24*3600*1000);
+  let n4w=0;
+  Object.keys(menuData).forEach(wk=>{
+    const wOffset=parseInt(wk.slice(1));
+    const mon=getMonday(wOffset);
+    (menuData[wk]||[]).forEach((dayMeals,di)=>{
+      if(!dayMeals.length) return;
+      const fecha=new Date(mon);fecha.setDate(mon.getDate()+di);
+      if(fecha<cutoff4w) return;
+      dayMeals.forEach(m=>{if(m.name===name&&!m.isProducto) n4w++;});
+    });
+  });
   const parts=[];
   if(n4w) parts.push('<span class="uso-badge uso-badge-4w">'+n4w+'× 4sem</span>');
   if(nAll>n4w) parts.push('<span class="uso-badge uso-badge-all">'+nAll+'× total</span>');
@@ -3984,6 +4446,7 @@ function toggleFavFilter(){
   if(btn) btn.classList.toggle('active', mostrarSoloFavoritas);
   renderCustomList(document.getElementById('custom-search').value);
 }
+renderCustomList._refs=[];
 function renderCustomList(q){
   renderElabChips();
   if(!q) renderHistorialRanking();
@@ -3999,13 +4462,16 @@ function renderCustomList(q){
       :'<div class="empty-tbl">Sin resultados.</div>';
     return;
   }
-  // Favoritas primero
-  all.sort((a,b)=>{
+  // Aplicar sort respetando favoritas primero como criterio secundario estable
+  const sorted=[...all].sort((a,b)=>{
     const fa=favoritas.has(a.name)?0:1;
     const fb=favoritas.has(b.name)?0:1;
-    return fa-fb;
+    if(fa!==fb) return fa-fb; // favoritas siempre primero
+    // dentro del mismo grupo, aplicar el sort activo
+    const av=typeof a[sortComida.col]==='string'?a[sortComida.col].toLowerCase():a[sortComida.col];
+    const bv=typeof b[sortComida.col]==='string'?b[sortComida.col].toLowerCase():b[sortComida.col];
+    return av<bv?-sortComida.dir:av>bv?sortComida.dir:0;
   });
-  const sorted=sortBy(all,sortComida.col,sortComida.dir);
   const s=sortComida;
   el.innerHTML=`<table class="food-tbl"><thead><tr>
     <th style="${thStyle()}" onclick="sortComidaBy('name')">Nombre ${sortArrow(s,'name')}</th>
@@ -4020,7 +4486,7 @@ function renderCustomList(q){
   </tr></thead><tbody>${
     sorted.map((f,si)=>{
       const mi=misComidas.findIndex(c=>c.name===f.name&&c.cals===f.cals);const isMia=mi>=0;
-      const rid='_ca_'+si;window[rid]=f;
+      renderCustomList._refs[si]=f;
       const MAX_INGR=2;
       const ingrs=(()=>{
         if(!f.ingredientes||!f.ingredientes.length) return '';
@@ -4031,7 +4497,7 @@ function renderCustomList(q){
         return `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">${chips}${more}</div>`;
       })();
       const isFav=favoritas.has(f.name);
-      return`<tr style="cursor:pointer" onclick="openSheetComida(window['${rid}'])">
+      return`<tr style="cursor:pointer" onclick="openSheetComida(renderCustomList._refs[${si}])">
         <td>
           <div style="display:flex;align-items:flex-start;gap:4px">
             <button class="fav-star" onclick="toggleFavorita('${f.name.replace(/'/g,"\\'")}',event)" title="${isFav?'Quitar de favoritas':'Añadir a favoritas'}">${isFav?'⭐':'☆'}</button>
@@ -4044,6 +4510,7 @@ function renderCustomList(q){
 }
 
 let builtinVisible=100;
+renderBuiltinList._refs=[];
 function renderBuiltinList(q,reset){
   if(reset||reset===undefined)builtinVisible=100;
   const el=document.getElementById('builtin-list');
@@ -4056,9 +4523,9 @@ function renderBuiltinList(q,reset){
   const s=sortAlimento;
   const rows=visible.map((f,si)=>{
     const ei=misAlimentos.findIndex(a=>a.name===f.name&&a.cals===f.cals);const isExtra=ei>=0;
-    const rid='_ba_'+si;window[rid]=f;
+    renderBuiltinList._refs[si]=f;
     const equivTags=(()=>{let t='';if(f.pesoUd)t+=`<span style="font-size:8px;background:#eff6ff;color:#1e3a5f;padding:1px 5px;border-radius:99px;border:1px solid #bfdbfe;margin-left:3px;white-space:nowrap">1 ud≈${f.pesoUd}g</span>`;if(f.pesoCuchara)t+=`<span style="font-size:8px;background:#fdf4ff;color:#6b21a8;padding:1px 5px;border-radius:99px;border:1px solid #e9d5ff;margin-left:3px;white-space:nowrap">1 cuchara≈${f.pesoCuchara}g</span>`;return t;})();
-    return`<tr style="cursor:pointer" onclick="openSheetAlimento(window['${rid}'])"><td>${f.name}${equivTags}</td><td style="color:#6b7280">${f.cat}</td><td>${f.cals}</td><td>${f.hc}g</td><td>${f.prot}g</td><td>${f.gras}g</td></tr>`;
+    return`<tr style="cursor:pointer" onclick="openSheetAlimento(renderBuiltinList._refs[${si}])"><td>${f.name}${equivTags}</td><td style="color:#6b7280">${f.cat}</td><td>${f.cals}</td><td>${f.hc}g</td><td>${f.prot}g</td><td>${f.gras}g</td></tr>`;
   }).join('');
   const showMore=remaining>0?`<tr><td colspan="6" style="text-align:center;padding:12px 0">
     <button onclick="builtinVisible+=100;renderBuiltinList(document.getElementById('builtin-search').value,false)" style="background:#f0fdf4;border:1.5px solid rgba(5,150,105,.25);color:var(--em-3);border-radius:var(--rm);padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
@@ -4128,7 +4595,10 @@ function clearKcalOverride(){
 }
 
 function openSheetComida(f){
-  const mi=misComidas.findIndex(c=>c.name===f.name&&c.cals===f.cals);
+  // Buscar por nombre+cals o por nombre+kcalOverride (si las kcal base cambiaron tras override)
+  let mi=misComidas.findIndex(c=>c.name===f.name&&c.cals===f.cals);
+  if(mi<0&&f.kcalOverride!=null) mi=misComidas.findIndex(c=>c.name===f.name&&c.kcalOverride===f.kcalOverride);
+  if(mi<0) mi=misComidas.findIndex(c=>c.name===f.name); // fallback por nombre
   const isMia=mi>=0;
   sheetComidaRef={...f, _idx:mi, _isBase:!isMia};
 
@@ -4179,6 +4649,7 @@ function openSheetComida(f){
   document.getElementById('sheet-comida').classList.add('active');
 }
 
+searchScIngr._refs=[];
 function searchScIngr(){
   const q=document.getElementById('sc-ingr-search').value.trim().toLowerCase();
   const res=document.getElementById('sc-ingr-results');
@@ -4186,8 +4657,8 @@ function searchScIngr(){
   const matches=getAllIngr().filter(f=>f.name.toLowerCase().includes(q)).slice(0,8);
   if(!matches.length){res.style.display='none';return;}
   res.innerHTML=matches.map((f,i)=>{
-    const rid='_sci_'+i; window[rid]=f;
-    return`<div class="si" onclick="selectScIngr(window['${rid}'])"><div><div>${f.name}</div><div class="si-info">${f.cals} kcal/100g · HC ${f.hc}g · P ${f.prot}g · G ${f.gras}g${f.pesoUd?' · <b>≈'+f.pesoUd+'g/ud</b>':''}${f.pesoCuchara?' · <b>≈'+f.pesoCuchara+'g/cuchara</b>':''}</div></div></div>`;
+    searchScIngr._refs[i]=f;
+    return`<div class="si" onclick="selectScIngr(searchScIngr._refs[${i}])"><div><div>${f.name}</div><div class="si-info">${f.cals} kcal/100g · HC ${f.hc}g · P ${f.prot}g · G ${f.gras}g${f.pesoUd?' · <b>≈'+f.pesoUd+'g/ud</b>':''}${f.pesoCuchara?' · <b>≈'+f.pesoCuchara+'g/cuchara</b>':''}</div></div></div>`;
   }).join('');
   res.style.display='block';
 }
@@ -4201,13 +4672,24 @@ function selectScIngr(f){
     document.getElementById('sc-ingr-qty').value='1';
     document.getElementById('sc-ingr-qty').placeholder='ud';
     showUdHint('sc-ud-hint', f.pesoUd);
+  } else if(f.pesoCuchara){
+    document.getElementById('sc-ingr-unit').value='cuchara';
+    document.getElementById('sc-ingr-qty').value='1';
+    document.getElementById('sc-ingr-qty').placeholder='cucharas';
+    showUdHint('sc-ud-hint', f.pesoCuchara, 'cuchara');
   } else {
     document.getElementById('sc-ingr-unit').value='g';
-  hideUdHint('sc-ud-hint');
     document.getElementById('sc-ingr-qty').placeholder='100';
     hideUdHint('sc-ud-hint');
   }
   document.getElementById('sc-ingr-qty').focus();
+}
+
+function _warnKcalOverrideIfNeeded(){
+  if(sheetComidaRef.kcalOverride==null) return;
+  // Show a subtle inline notice that override may no longer reflect reality
+  const unit=document.getElementById('sc-cals-unit');
+  if(unit) unit.innerHTML='por ración <span class="badge-editado" title="Los ingredientes han cambiado — revisa si el ajuste manual sigue siendo correcto">editado ⚠</span>';
 }
 
 function addScIngr(){
@@ -4225,9 +4707,10 @@ function addScIngr(){
   document.getElementById('sc-ingr-results').style.display='none';
   renderScIngrList();
   recalcSheetComida();
+  _warnKcalOverrideIfNeeded();
 }
 
-function removeScIngr(idx){scIngrList.splice(idx,1);renderScIngrList();recalcSheetComida();}
+function removeScIngr(idx){scIngrList.splice(idx,1);renderScIngrList();recalcSheetComida();_warnKcalOverrideIfNeeded();}
 
 function renderScIngrList(){
   const el=document.getElementById('sc-ingr-list');
@@ -4385,6 +4868,7 @@ function saveSheetComida(){
   }else{
     misComidas[sheetComidaRef._idx]=updated;
   }
+  saveAll();
   document.getElementById('sheet-comida').classList.remove('active');
   renderCustomList(document.getElementById('custom-search').value);
 }
@@ -4525,11 +5009,11 @@ function saveSheetAlimento(){
     custom:true
   };
   if(sheetAlimentoRef._isBase){
-    // Save as new custom entry (override)
     misAlimentos.push(updated);
   }else{
     misAlimentos[sheetAlimentoRef._idx]=updated;
   }
+  saveAll();
   document.getElementById('sheet-alimento').classList.remove('active');
   renderBuiltinList(document.getElementById('builtin-search').value);
 }
@@ -4538,6 +5022,7 @@ function deleteSheetAlimento(){
   const idx=sheetAlimentoRef._idx;
   if(!sheetAlimentoRef._editable||idx===undefined||idx<0)return;
   misAlimentos.splice(idx,1);
+  saveAll();
   document.getElementById('sheet-alimento').classList.remove('active');
   renderBuiltinList(document.getElementById('builtin-search').value);
 }
@@ -4587,19 +5072,102 @@ function getWeekDayIndex(dateObj){
   return{weekOffset,dayIndex:dow===0?6:dow-1};
 }
 
+let _recycleOrigenKey=null;
+
 function openRecycle(){
+  _recycleOrigenKey=null;
+  document.getElementById('recycle-step1').style.display='block';
+  document.getElementById('recycle-step2').style.display='none';
+
+  const filled=Object.keys(menuData).filter(k=>menuData[k].some(d=>d.length>0))
+    .sort((a,b)=>parseInt(b.slice(1))-parseInt(a.slice(1)));
+
   const list=document.getElementById('recycle-list');
-  const filled=Object.keys(menuData).filter(k=>{
-    if(k===getWeekKey(currentWeekOffset))return false;
-    return menuData[k].some(d=>d.length>0);
-  }).sort((a,b)=>parseInt(b.slice(1))-parseInt(a.slice(1)));
-  if(!filled.length)list.innerHTML='<div class="no-weeks">No hay semanas con datos para reciclar.</div>';
-  else list.innerHTML=filled.map(k=>{const o=parseInt(k.slice(1)),cnt=menuData[k].reduce((s,d)=>s+d.length,0);return`<div class="w-opt" onclick="applyRecycle('${k}')"><div><div class="w-opt-lbl">${getWeekShortLabel(o)}</div><div class="w-opt-sub">${cnt} comida${cnt!==1?'s':''}</div></div><span class="w-opt-badge">Copiar →</span></div>`;}).join('');
+  if(!filled.length){
+    list.innerHTML='<div class="no-weeks">No hay semanas con datos guardados.</div>';
+  } else {
+    list.innerHTML=filled.map(k=>{
+      const o=parseInt(k.slice(1));
+      const cnt=menuData[k].reduce((s,d)=>s+d.length,0);
+      const isCurrentWeek=k===getWeekKey(currentWeekOffset);
+      const badge=isCurrentWeek?'<span style="font-size:9px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:99px;padding:1px 6px;margin-left:4px">esta semana</span>':'';
+      return`<div class="w-opt" onclick="recycleSelectOrigen('${k}')">
+        <div>
+          <div class="w-opt-lbl">${getWeekShortLabel(o)}${badge}</div>
+          <div class="w-opt-sub">${cnt} comida${cnt!==1?'s':''}</div>
+        </div>
+        <span class="w-opt-badge">Copiar →</span>
+      </div>`;
+    }).join('');
+  }
   document.getElementById('modal-recycle').classList.add('active');
 }
-function applyRecycle(k){
-  menuData[getWeekKey(currentWeekOffset)]=menuData[k].map(d=>d.map(m=>({...m})));
-  closeModal('modal-recycle');render();
+
+function recycleSelectOrigen(k){
+  _recycleOrigenKey=k;
+  const o=parseInt(k.slice(1));
+
+  // Mostrar paso 2
+  document.getElementById('recycle-step1').style.display='none';
+  document.getElementById('recycle-step2').style.display='block';
+  document.getElementById('recycle-origen-label').textContent='Origen: '+getWeekShortLabel(o);
+
+  // Generar semanas destino: semana actual ± 12 semanas, excluyendo el origen
+  const destinoList=document.getElementById('recycle-destino-list');
+  const items=[];
+  for(let d=-2;d<=12;d++){
+    const destOffset=currentWeekOffset+d;
+    const destKey=getWeekKey(destOffset);
+    if(destKey===k) continue; // no copiar sobre sí misma
+    const hasMeals=menuData[destKey]&&menuData[destKey].some(day=>day.length>0);
+    const isCurrentWeek=destOffset===currentWeekOffset;
+    const label=getWeekShortLabel(destOffset);
+    const badge=isCurrentWeek
+      ?'<span style="font-size:9px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:99px;padding:1px 6px;margin-left:4px">esta semana</span>'
+      :'';
+    const warn=hasMeals
+      ?'<span style="font-size:9px;color:#d97706;margin-left:4px">⚠ tiene datos</span>'
+      :'';
+    items.push(`<div class="w-opt" onclick="applyRecycle('${destKey}')">
+      <div>
+        <div class="w-opt-lbl">${label}${badge}${warn}</div>
+        <div class="w-opt-sub">${hasMeals?menuData[destKey].reduce((s,d)=>s+d.length,0)+' comidas ya guardadas':'Vacía'}</div>
+      </div>
+      <span class="w-opt-badge" style="background:#059669;color:#fff">Pegar →</span>
+    </div>`);
+  }
+  destinoList.innerHTML=items.join('');
+}
+
+function recycleBackToStep1(){
+  _recycleOrigenKey=null;
+  document.getElementById('recycle-step1').style.display='block';
+  document.getElementById('recycle-step2').style.display='none';
+}
+
+function applyRecycle(destKey){
+  if(!_recycleOrigenKey) return;
+  const destOffset=parseInt(destKey.slice(1));
+  const hasMeals=menuData[destKey]&&menuData[destKey].some(d=>d.length>0);
+  if(hasMeals&&!confirm('La semana destino ya tiene comidas. ¿Reemplazarlas?')) return;
+  menuData[destKey]=menuData[_recycleOrigenKey].map(d=>d.map(m=>({...m})));
+  // Copiar también las notas del día
+  const origenBase=_recycleOrigenKey+'-';
+  const destinoBase=destKey+'-';
+  for(let i=0;i<7;i++){
+    const origenNota=notasDia[origenBase+i];
+    if(origenNota) notasDia[destinoBase+i]=origenNota;
+    else delete notasDia[destinoBase+i];
+  }
+  saveAll();
+  closeModal('modal-recycle');
+  // Si el destino es la semana actual, refrescar vista
+  if(destOffset===currentWeekOffset) render();
+  else {
+    // Navegar a la semana destino
+    currentWeekOffset=destOffset;
+    render();
+  }
 }
 
 function openModalWithType(dayIdx, mealType){
@@ -4736,65 +5304,57 @@ function addCompraItem(){
   renderCompra();
 }
 
-function generateFromMenu(){
-  const wd=getWeekData(currentWeekOffset);
-  const allMeals=wd.flat();
-  if(!allMeals.length){alert('No hay comidas en la semana actual. Añade comidas primero.');return;}
-  let added=0;
 
-  allMeals.forEach(meal=>{
-    if(meal.isProducto){
-      // Products go in as a single item with their compra category
-      const exists=compraItems.some(ci=>ci.name.toLowerCase()===meal.name.toLowerCase());
-      if(!exists){
-        const cat=meal.compracat||'🛍 Otros';
-        const qty=meal.porcion||'';
-        compraItems.push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name:meal.name,qty,cat,done:false,auto:true,_isProducto:true});
-        added++;
-      }
-    } else if(meal.ingredients&&meal.ingredients.length){
-      // Comidas con ingredientes → expandir ingredientes
-      meal.ingredients.forEach(ingr=>{
-        const key=meal.name+'__'+ingr.name;
-        const exists=compraItems.some(ci=>ci._mealKey===key);
-        if(!exists){
-          // find ingredient data to get category
-          const ingrData=getAllIngr().find(f=>f.name.toLowerCase()===ingr.name.toLowerCase());
-          const cat=COMPRA_CAT_MAP[ingrData?ingrData.cat:'Otros']||'🛍 Otros';
-          const qty=ingr.qty?`${ingr.qty}${ingr.unit||'g'}`:'';
-          compraItems.push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name:ingr.name,qty,cat,done:false,auto:true,_mealKey:key,_fromMeal:meal.name});
-          added++;
-        }
-      });
-    } else {
-      // Comidas sin ingredientes definidos → añadir la comida directamente
-      const exists=compraItems.some(ci=>ci.name.toLowerCase()===meal.name.toLowerCase());
-      if(!exists){
-        const cat=COMPRA_CAT_MAP[meal.cat]||'🛍 Otros';
-        const qty=meal.qty?`${meal.qty}${meal.qtyUnit||'g'}`:'';
-        compraItems.push({id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name:meal.name,qty,cat,done:false,auto:true});
-        added++;
-      }
-    }
-  });
-
-  renderCompra();
-  if(added>0)alert(`✅ Se han añadido ${added} artículo${added!==1?'s':''} a la lista.`);
-  else alert('Todos los artículos del menú ya estaban en la lista.');
-}
 
 
 // ════════════════════════════════════════
 // OBJETIVOS NUTRICIONALES
 // ════════════════════════════════════════
-let objetivos = {cals:0, prot:0, hc:0, gras:0};
+let objetivos = {cals:0, prot:0, hc:0, gras:0, frecuencias:[]};
+
+// frecuencias en memoria temporal mientras el modal está abierto
+let _freqRulesDraft=[];
 
 function abrirObjetivos(){
   document.getElementById('obj-cals').value = objetivos.cals||'';
   document.getElementById('obj-prot').value = objetivos.prot||'';
   document.getElementById('obj-hc').value   = objetivos.hc||'';
   document.getElementById('obj-gras').value = objetivos.gras||'';
+  _freqRulesDraft = (objetivos.frecuencias||[]).map(r=>({...r}));
+  renderFreqRulesList();
   document.getElementById('modal-objetivos').classList.add('active');
+}
+
+function renderFreqRulesList(){
+  const el=document.getElementById('freq-rules-list');
+  if(!el) return;
+  if(!_freqRulesDraft.length){
+    el.innerHTML='<div style="font-size:11px;color:#9ca3af;font-style:italic;padding:6px 0 10px">Sin reglas todavía.</div>';
+    return;
+  }
+  el.innerHTML=`<div style="margin-bottom:10px">${_freqRulesDraft.map((r,i)=>`
+    <div class="freq-rule-row">
+      <span style="font-size:14px;flex-shrink:0">${CAT_ICONS[r.cat]||'🍴'}</span>
+      <span class="freq-rule-cat">${r.cat}</span>
+      <span class="freq-rule-tipo ${r.tipo==='min'?'freq-tipo-min':'freq-tipo-max'}">${r.tipo==='min'?'mín':'máx'}</span>
+      <span class="freq-rule-dias">${r.dias} día${r.dias!==1?'s':''}/sem</span>
+      <button class="freq-rule-del" onclick="_freqRulesDraft.splice(${i},1);renderFreqRulesList()">✕</button>
+    </div>`).join('')}</div>`;
+}
+
+function addFreqRule(){
+  const cat=document.getElementById('freq-new-cat').value;
+  const tipo=document.getElementById('freq-new-tipo').value;
+  const dias=Math.min(7,Math.max(1,parseInt(document.getElementById('freq-new-dias').value)||1));
+  // No duplicar misma categoría+tipo
+  if(_freqRulesDraft.some(r=>r.cat===cat&&r.tipo===tipo)){
+    const existing=_freqRulesDraft.find(r=>r.cat===cat&&r.tipo===tipo);
+    existing.dias=dias;
+  } else {
+    _freqRulesDraft.push({cat,tipo,dias});
+  }
+  document.getElementById('freq-new-dias').value=2;
+  renderFreqRulesList();
 }
 
 function guardarObjetivos(){
@@ -4803,10 +5363,57 @@ function guardarObjetivos(){
     prot: parseInt(document.getElementById('obj-prot').value)||0,
     hc:   parseInt(document.getElementById('obj-hc').value)||0,
     gras: parseInt(document.getElementById('obj-gras').value)||0,
+    frecuencias: _freqRulesDraft.map(r=>({...r})),
   };
   saveAll();
   closeModal('modal-objetivos');
   render();
+}
+
+// Calcular días de la semana actual que cumplen una categoría
+function calcFreqSemana(weekOffset){
+  const wd=getWeekData(weekOffset);
+  const catDias={};
+  wd.forEach((dayMeals,di)=>{
+    if(!dayMeals.length) return;
+    const cats=new Set();
+    dayMeals.forEach(m=>{
+      let cat=m.cat&&m.cat!=='Otro'?m.cat:null;
+      if(!cat){
+        const found=[...misComidas,...misAlimentos,...DESPENSA].find(c=>c.name===m.name);
+        cat=normalizarCat((found&&found.cat)||'Otros');
+      }
+      cats.add(cat);
+    });
+    cats.forEach(cat=>{
+      catDias[cat]=(catDias[cat]||0)+1;
+    });
+  });
+  return catDias;
+}
+
+function renderFrecuenciasProgreso(weekOffset){
+  const reglas=objetivos.frecuencias||[];
+  if(!reglas.length) return '';
+  const catDias=calcFreqSemana(weekOffset);
+  const rows=reglas.map(r=>{
+    const actual=catDias[r.cat]||0;
+    const icon=CAT_ICONS[r.cat]||'🍴';
+    let statusClass,statusTxt;
+    if(r.tipo==='min'){
+      statusClass=actual>=r.dias?'freq-ok':'freq-warn';
+      statusTxt=`${actual}/${r.dias}d`;
+    } else {
+      statusClass=actual<=r.dias?'freq-ok':'freq-warn';
+      statusTxt=`${actual}/${r.dias}d`;
+    }
+    return`<div class="freq-progress-row">
+      <span class="freq-progress-icon">${icon}</span>
+      <span class="freq-progress-label">${r.cat} <span style="font-size:9px;color:#9ca3af">(${r.tipo==='min'?'mín':'máx'})</span></span>
+      <span class="freq-progress-status ${statusClass}">${statusTxt}</span>
+    </div>`;
+  }).join('');
+  return`<div class="freq-progress">${rows}</div>`;
 }
 
 function renderObjetivosProgreso(meals){
@@ -4838,18 +5445,21 @@ function renderObjetivosProgreso(meals){
 // ════════════════════════════════════════
 // NOTA DE DÍA
 // ════════════════════════════════════════
+let _notaDayIdx=null;
 function editarNotaDia(dayIdx, event){
   event.stopPropagation();
-  const wd = getWeekData(currentWeekOffset);
-  window._notaDayIdx = dayIdx;
+  const key=getWeekKey(currentWeekOffset)+'-'+dayIdx;
+  _notaDayIdx = dayIdx;
   document.getElementById('nota-dia-label').textContent = DAYS[dayIdx];
-  document.getElementById('nota-dia-input').value = wd[dayIdx]._nota||'';
+  document.getElementById('nota-dia-input').value = notasDia[key]||'';
   document.getElementById('modal-nota-dia').classList.add('active');
   setTimeout(()=>document.getElementById('nota-dia-input').focus(), 100);
 }
 function guardarNotaDia(){
-  const wd = getWeekData(currentWeekOffset);
-  wd[window._notaDayIdx]._nota = document.getElementById('nota-dia-input').value.trim();
+  const key=getWeekKey(currentWeekOffset)+'-'+_notaDayIdx;
+  const val=document.getElementById('nota-dia-input').value.trim();
+  if(val) notasDia[key]=val;
+  else delete notasDia[key];
   saveAll(); render();
   closeModal('modal-nota-dia');
 }
@@ -5163,9 +5773,9 @@ function saveAll(){
     localStorage.setItem('mm_misProductos', JSON.stringify(misProductos));
     localStorage.setItem('mm_compraItems', JSON.stringify(compraItems));
     localStorage.setItem('mm_plantillas', JSON.stringify(plantillas));
-    localStorage.setItem('mm_usageLog', JSON.stringify(usageLog));
     localStorage.setItem('mm_objetivos', JSON.stringify(objetivos));
     localStorage.setItem('mm_favoritas', JSON.stringify([...favoritas]));
+    localStorage.setItem('mm_notasDia', JSON.stringify(notasDia));
   }catch(e){console.warn('saveAll error:',e);}
 }
 function loadAll(){
@@ -5176,9 +5786,18 @@ function loadAll(){
     const mp=localStorage.getItem('mm_misProductos'); if(mp)misProductos=JSON.parse(mp);
     const ci=localStorage.getItem('mm_compraItems');  if(ci)compraItems=JSON.parse(ci);
     const pl=localStorage.getItem('mm_plantillas');   if(pl)plantillas=JSON.parse(pl);
-    const ul=localStorage.getItem('mm_usageLog');     if(ul)usageLog=JSON.parse(ul);
-    const ob=localStorage.getItem('mm_objetivos');    if(ob)objetivos=JSON.parse(ob);
+    const ob=localStorage.getItem('mm_objetivos');    if(ob){ objetivos=JSON.parse(ob); if(!Array.isArray(objetivos.frecuencias)) objetivos.frecuencias=[]; }
     const fv=localStorage.getItem('mm_favoritas');    if(fv)favoritas=new Set(JSON.parse(fv));
+    const nd=localStorage.getItem('mm_notasDia');     if(nd)notasDia=JSON.parse(nd);
+    // Migrar notas antiguas guardadas como _nota en el array del día
+    Object.keys(menuData).forEach(wk=>{
+      menuData[wk].forEach((dayArr,di)=>{
+        if(dayArr._nota){
+          notasDia[wk+'-'+di]=dayArr._nota;
+          delete dayArr._nota;
+        }
+      });
+    });
   }catch(e){console.warn('loadAll error:',e);}
 }
 
@@ -5210,11 +5829,27 @@ function abrirResumenDia(dayIdx){
     return;
   }
 
-  // Macros totales
-  const totalCals=meals.reduce((s,m)=>s+m.cals,0);
-  const hcG=meals.reduce((s,m)=>s+m.cals*m.hc/100/4,0);
-  const protG=meals.reduce((s,m)=>s+m.cals*m.prot/100/4,0);
-  const grasG=meals.reduce((s,m)=>s+m.cals*m.gras/100/9,0);
+  // Macros totales — respetar kcalOverride si existe en misComidas
+  const totalCals=meals.reduce((s,m)=>{
+    const mc=misComidas.find(c=>c.name===m.name&&(c.cals===m.cals||c.kcalOverride===m.cals));
+    return s+(mc&&mc.kcalOverride!=null?mc.kcalOverride:m.cals);
+  },0);
+  // Para los gramos de macros, usar también el kcal real de cada comida
+  const hcG=meals.reduce((s,m)=>{
+    const mc=misComidas.find(c=>c.name===m.name&&(c.cals===m.cals||c.kcalOverride===m.cals));
+    const kcal=mc&&mc.kcalOverride!=null?mc.kcalOverride:m.cals;
+    return s+kcal*m.hc/100/4;
+  },0);
+  const protG=meals.reduce((s,m)=>{
+    const mc=misComidas.find(c=>c.name===m.name&&(c.cals===m.cals||c.kcalOverride===m.cals));
+    const kcal=mc&&mc.kcalOverride!=null?mc.kcalOverride:m.cals;
+    return s+kcal*m.prot/100/4;
+  },0);
+  const grasG=meals.reduce((s,m)=>{
+    const mc=misComidas.find(c=>c.name===m.name&&(c.cals===m.cals||c.kcalOverride===m.cals));
+    const kcal=mc&&mc.kcalOverride!=null?mc.kcalOverride:m.cals;
+    return s+kcal*m.gras/100/9;
+  },0);
   const t=totalCals||1;
 
   document.getElementById('srd-cals').textContent=totalCals;
@@ -5256,10 +5891,9 @@ function abrirResumenDia(dayIdx){
   });
 
   if(hasMicro){
-    const f=renderNutrientes({...microTotals,_forzar:true});
     document.getElementById('srd-micros').innerHTML=`
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#9ca3af;margin-bottom:4px">Micronutrientes totales del día</div>
-      ${f}`;
+      ${renderNutrientesTotales(microTotals)}`;
   } else {
     document.getElementById('srd-micros').innerHTML='';
   }
@@ -5267,38 +5901,36 @@ function abrirResumenDia(dayIdx){
   document.getElementById('sheet-resumen-dia').classList.add('active');
 }
 
-// Override renderNutrientes para soportar objetos planos con _forzar
-const _origRenderNutrientes=renderNutrientes;
-renderNutrientes=function(f){
-  if(!f._forzar) return _origRenderNutrientes(f);
-  // Mismo renderizado pero con los valores directos
+// Renderiza micronutrientes totales del día (valores ya calculados, no por 100g)
+function renderNutrientesTotales(micro){
   let html='';
-  const hasMacroExtra=f.fibra!==undefined||f.azucares!==undefined;
+  const hasMacroExtra=micro.fibra!==undefined||micro.azucares!==undefined;
   if(hasMacroExtra){
     html+=`<div class="nut-section-title">Desglose macros</div><div class="nut-grid">`;
-    html+=nutItem('fibra','Fibra',Math.round(f.fibra*10)/10,IDR.fibra);
-    html+=nutItem('azucares','Azúcares',Math.round(f.azucares*10)/10,IDR.azucares);
-    html+=nutItem('grasasSat','G. saturadas',Math.round(f.grasasSat*10)/10,IDR.grasasSat);
-    html+=nutItem('grasasInsat','G. insaturadas',Math.round(f.grasasInsat*10)/10,IDR.grasasInsat);
+    html+=nutItem('fibra','Fibra',Math.round(micro.fibra*10)/10,IDR.fibra);
+    html+=nutItem('azucares','Azúcares',Math.round(micro.azucares*10)/10,IDR.azucares);
+    html+=nutItem('grasasSat','G. saturadas',Math.round(micro.grasasSat*10)/10,IDR.grasasSat);
+    html+=nutItem('grasasInsat','G. insaturadas',Math.round(micro.grasasInsat*10)/10,IDR.grasasInsat);
     html+=`</div>`;
   }
   html+=`<div class="nut-section-title">Minerales</div><div class="nut-grid">`;
   ['calcio','hierro','potasio','sodio','magnesio','zinc'].forEach(k=>{
     const labels={calcio:'Calcio',hierro:'Hierro',potasio:'Potasio',sodio:'Sodio',magnesio:'Magnesio',zinc:'Zinc'};
-    html+=nutItem(k,labels[k],Math.round(f[k]*10)/10,IDR[k]);
+    html+=nutItem(k,labels[k],Math.round(micro[k]*10)/10,IDR[k]);
   });
   html+=`</div><div class="nut-section-title">Vitaminas</div><div class="nut-grid">`;
   ['vitC','vitD','vitA','folatos','vitB12'].forEach(k=>{
     const labels={vitC:'Vit. C',vitD:'Vit. D',vitA:'Vit. A',folatos:'Folatos',vitB12:'Vit. B12'};
-    html+=nutItem(k,labels[k],Math.round(f[k]*10)/10,IDR[k]);
+    html+=nutItem(k,labels[k],Math.round(micro[k]*10)/10,IDR[k]);
   });
   html+=`</div>`;
   return html;
-};
+}
 
 // ══════════════════════════════════════════
 // DUPLICAR DÍA
 // ══════════════════════════════════════════
+let _dupFromIdx=null;
 function duplicarDia(fromIdx){
   const wd=getWeekData(currentWeekOffset);
   const meals=wd[fromIdx];
@@ -5307,14 +5939,19 @@ function duplicarDia(fromIdx){
   const sel=document.getElementById('dup-to-select');
   sel.innerHTML=DAYS.map((d,i)=>i!==fromIdx?'<option value="'+i+'">'+d+'</option>':'').join('');
   document.getElementById('modal-duplicar').classList.add('active');
-  window._dupFromIdx=fromIdx;
+  _dupFromIdx=fromIdx;
 }
 function confirmDuplicar(){
-  const fromIdx=window._dupFromIdx;
+  const fromIdx=_dupFromIdx;
   const toIdx=parseInt(document.getElementById('dup-to-select').value);
   const wd=getWeekData(currentWeekOffset);
   if(wd[toIdx].length&&!confirm(DAYS[toIdx]+' ya tiene comidas. ¿Reemplazarlas?'))return;
   wd[toIdx]=wd[fromIdx].map(m=>({...m}));
+  // Copiar también las notas del día origen al destino
+  const wk=getWeekKey(currentWeekOffset);
+  const origenNota=notasDia[wk+'-'+fromIdx];
+  if(origenNota) notasDia[wk+'-'+toIdx]=origenNota;
+  else delete notasDia[wk+'-'+toIdx];
   closeModal('modal-duplicar');
   saveAll();render();
 }
@@ -5338,19 +5975,21 @@ function ejecutarGenerador(){
 
   // Función score: cuánto se aleja una combinación del objetivo
   function score(almuerzo, cena){
-    const totalCals=almuerzo.cals+cena.cals;
+    const aCals=almuerzo.kcalOverride??almuerzo.cals;
+    const cCals=cena.kcalOverride??cena.cals;
+    const totalCals=aCals+cCals;
     const diffCals=Math.abs(totalCals-cals)/cals;
     let s=diffCals;
     if(objProt){
-      const protG=almuerzo.cals*almuerzo.prot/100/4 + cena.cals*cena.prot/100/4;
+      const protG=aCals*almuerzo.prot/100/4 + cCals*cena.prot/100/4;
       s+=Math.abs(protG-objProt)/objProt*0.5;
     }
     if(objHc){
-      const hcG=almuerzo.cals*almuerzo.hc/100/4 + cena.cals*cena.hc/100/4;
+      const hcG=aCals*almuerzo.hc/100/4 + cCals*cena.hc/100/4;
       s+=Math.abs(hcG-objHc)/objHc*0.3;
     }
     if(objGras){
-      const grasG=almuerzo.cals*almuerzo.gras/100/9 + cena.cals*cena.gras/100/9;
+      const grasG=aCals*almuerzo.gras/100/9 + cCals*cena.gras/100/9;
       s+=Math.abs(grasG-objGras)/objGras*0.3;
     }
     return s;
@@ -5386,8 +6025,8 @@ function ejecutarGenerador(){
       // Quitar almuerzos y cenas existentes de este día
       wd[dayIdx]=wd[dayIdx].filter(m=>m.type!=='almuerzo'&&m.type!=='cena');
       // Añadir las nuevas
-      wd[dayIdx].push({name:bestA.name,type:'almuerzo',cals:bestA.cals,hc:bestA.hc,prot:bestA.prot,gras:bestA.gras,cat:bestA.cat,ingredients:bestA.ingredientes||[]});
-      wd[dayIdx].push({name:bestC.name,type:'cena',cals:bestC.cals,hc:bestC.hc,prot:bestC.prot,gras:bestC.gras,cat:bestC.cat,ingredients:bestC.ingredientes||[]});
+      wd[dayIdx].push({name:bestA.name,type:'almuerzo',cals:bestA.kcalOverride??bestA.cals,hc:bestA.hc,prot:bestA.prot,gras:bestA.gras,cat:bestA.cat,ingredients:bestA.ingredientes||[]});
+      wd[dayIdx].push({name:bestC.name,type:'cena',cals:bestC.kcalOverride??bestC.cals,hc:bestC.hc,prot:bestC.prot,gras:bestC.gras,cat:bestC.cat,ingredients:bestC.ingredientes||[]});
 
       usadas.add(bestA.name);usadas.add(bestC.name);
       generados++;
@@ -5436,7 +6075,14 @@ function guardarPlantilla(){
   const wd=getWeekData(currentWeekOffset);
   const totalMeals=wd.reduce((s,d)=>s+d.length,0);
   if(!totalMeals){alert('La semana actual está vacía. Añade comidas antes de guardar.');return;}
-  plantillas.push({nombre,fecha:new Date().toISOString(),datos:JSON.parse(JSON.stringify(wd))});
+  // Guardar también las notas de cada día de esta semana
+  const wk=getWeekKey(currentWeekOffset);
+  const notasPlantilla={};
+  for(let i=0;i<7;i++){
+    const nota=notasDia[wk+'-'+i];
+    if(nota) notasPlantilla[i]=nota;
+  }
+  plantillas.push({nombre,fecha:new Date().toISOString(),datos:JSON.parse(JSON.stringify(wd)),notasDia:notasPlantilla});
   document.getElementById('plantilla-nombre').value='';
   saveAll();renderPlantillas();
 }
@@ -5445,6 +6091,15 @@ function aplicarPlantilla(idx){
   if(!confirm('¿Aplicar la plantilla "' + plantillas[idx].nombre + '"?\nReemplazará todas las comidas de la semana actual.'))return;
   const wd=getWeekData(currentWeekOffset);
   plantillas[idx].datos.forEach((d,i)=>{wd[i]=d.map(m=>({...m}));});
+  // Restaurar notas guardadas en la plantilla (si las hay)
+  const wk=getWeekKey(currentWeekOffset);
+  if(plantillas[idx].notasDia){
+    for(let i=0;i<7;i++){
+      const nota=plantillas[idx].notasDia[i];
+      if(nota) notasDia[wk+'-'+i]=nota;
+      else delete notasDia[wk+'-'+i];
+    }
+  }
   saveAll();render();closeModal('modal-plantillas');
 }
 
@@ -5469,36 +6124,39 @@ function generateFromMenu(){
     if(meal.isProducto){
       const key=meal.name.toLowerCase();
       if(!acumulado[key]){
-        acumulado[key]={name:meal.name,qty:null,unit:'',cat:meal.compracat||'🛍 Otros',meals:[],isProducto:true};
+        acumulado[key]={name:meal.name,qty:null,unit:'',cat:meal.compracat||'🛍 Otros',meals:new Set(),isProducto:true};
       }
-      if(!acumulado[key].meals.includes(meal.name)) acumulado[key].meals.push(meal.name);
+      acumulado[key].meals.add(meal.name);
     } else {
       const ingrs=meal.ingredients||meal.ingredientes||[];
       if(ingrs.length){
+        // Buscar raciones de la comida en misComidas para escalar correctamente
+        const mealDef=misComidas.find(c=>c.name===meal.name);
+        const raciones=Math.max(1,mealDef?.raciones||1);
         ingrs.forEach(ingr=>{
           const key=ingr.name.toLowerCase();
           const ingrData=getAllIngr().find(f=>f.name.toLowerCase()===key);
           const cat=COMPRA_CAT_MAP[ingrData?ingrData.cat:'Otros']||'🛍 Otros';
-          const qty=parseFloat(ingr.qty)||0;
+          const qty=(parseFloat(ingr.qty)||0)/raciones;  // cantidad por ración
           const unit=ingr.unit||'g';
           if(!acumulado[key]){
-            acumulado[key]={name:ingr.name,qty:0,unit,cat,meals:[]};
+            acumulado[key]={name:ingr.name,qty:0,unit,cat,meals:new Set()};
           }
-          // Solo sumar si misma unidad
+          // Acumular siempre (misma comida puede aparecer varios días)
           if(acumulado[key].unit===unit){
             acumulado[key].qty+=qty;
           } else if(acumulado[key].qty===0){
             acumulado[key].qty=qty;acumulado[key].unit=unit;
           }
-          if(!acumulado[key].meals.includes(meal.name)) acumulado[key].meals.push(meal.name);
+          acumulado[key].meals.add(meal.name);
         });
       } else {
         const key=meal.name.toLowerCase();
         if(!acumulado[key]){
           const cat=COMPRA_CAT_MAP[meal.cat]||'🛍 Otros';
-          acumulado[key]={name:meal.name,qty:null,unit:'',cat,meals:[]};
+          acumulado[key]={name:meal.name,qty:null,unit:'',cat,meals:new Set()};
         }
-        if(!acumulado[key].meals.includes(meal.name)) acumulado[key].meals.push(meal.name);
+        acumulado[key].meals.add(meal.name);
       }
     }
   });
@@ -5509,7 +6167,8 @@ function generateFromMenu(){
     const exists=compraItems.some(ci=>ci.name.toLowerCase()===item.name.toLowerCase());
     if(!exists){
       const qtyStr=item.qty?`${Math.round(item.qty*10)/10}${item.unit}`:'';
-      const fromMeals=item.meals.length===1?item.meals[0]:item.meals.length+' comidas';
+      const mealsArr=item.meals instanceof Set?[...item.meals]:item.meals;
+      const fromMeals=mealsArr.length===1?mealsArr[0]:mealsArr.length+' comidas';
       compraItems.push({
         id:'ci_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
         name:item.name,qty:qtyStr,cat:item.cat,done:false,auto:true,
@@ -5528,14 +6187,16 @@ function generateFromMenu(){
 // ── EXPORTAR / IMPORTAR DATOS ──
 function exportarDatos(){
   const datos={
-    version:1,
+    version:2,
     fecha:new Date().toISOString(),
     menuData,
     misComidas,
     misAlimentos,
     misProductos,
     compraItems,
-    usageLog,
+    plantillas,
+    objetivos,
+    notasDia,
     favoritas:[...favoritas]
   };
   const json=JSON.stringify(datos,null,2);
@@ -5566,7 +6227,12 @@ function importarDatos(event){
       misAlimentos=datos.misAlimentos||[];
       misProductos=datos.misProductos||[];
       compraItems=datos.compraItems||[];
-      usageLog=datos.usageLog||[];
+      plantillas=datos.plantillas||[];
+      if(datos.objetivos){
+        objetivos=datos.objetivos;
+        if(!Array.isArray(objetivos.frecuencias)) objetivos.frecuencias=[];
+      }
+      if(datos.notasDia) notasDia=datos.notasDia;
       favoritas=new Set(datos.favoritas||[]);
       saveAll();
       render();
