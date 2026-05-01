@@ -1,4 +1,4 @@
-const CACHE = 'mimenu-v3';
+const CACHE = 'mimenu-v6';
 const ASSETS = ['./', './index.html'];
 
 self.addEventListener('install', e => {

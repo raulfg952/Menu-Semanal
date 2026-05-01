@@ -601,7 +601,17 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
         <div style="display:flex;gap:6px">
           <button onclick="abrirObjetivos()" title="Objetivos nutricionales" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">🎯</button>
           <button onclick="abrirCompartir()" title="Compartir semana" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">📤</button>
-          <button onclick="exportarDatos()" title="Exportar datos" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">⬇️</button>
+          <div style="position:relative">
+            <button onclick="toggleExportMenu()" title="Exportar datos" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">⬇️</button>
+            <div id="export-menu" style="display:none;position:fixed;top:60px;right:12px;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.15);border:1px solid #e5e7eb;min-width:190px;z-index:400;overflow:hidden">
+              <div style="font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;padding:8px 12px 4px">Backup</div>
+              <button onclick="exportarDatos();toggleExportMenu()" style="width:100%;text-align:left;padding:8px 12px;border:none;background:none;font-size:12px;cursor:pointer;color:#111827;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='none'">💾 Backup completo <span style="font-size:10px;color:#9ca3af">JSON</span></button>
+              <div style="font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;padding:8px 12px 4px;border-top:1px solid #f3f4f6">Exportar catálogo</div>
+              <button onclick="exportarCSV('comidas');toggleExportMenu()" style="width:100%;text-align:left;padding:8px 12px;border:none;background:none;font-size:12px;cursor:pointer;color:#111827;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='none'">🍽️ Comidas <span style="font-size:10px;color:#9ca3af">CSV</span></button>
+              <button onclick="exportarCSV('alimentos');toggleExportMenu()" style="width:100%;text-align:left;padding:8px 12px;border:none;background:none;font-size:12px;cursor:pointer;color:#111827;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='none'">🥦 Alimentos <span style="font-size:10px;color:#9ca3af">CSV</span></button>
+              <button onclick="exportarCSV('productos');toggleExportMenu()" style="width:100%;text-align:left;padding:8px 12px;border:none;background:none;font-size:12px;cursor:pointer;color:#111827;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='none'">🛍️ Productos <span style="font-size:10px;color:#9ca3af">CSV</span></button>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -715,7 +725,9 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
         <button class="btn-primary" id="btn-nueva-comida" onclick="openComidaBuilder()">+ Nueva comida</button>
         <label class="btn-primary" id="btn-importar-csv" style="cursor:pointer;display:flex;align-items:center;gap:4px">⬆️ Importar<input type="file" accept=".csv,.txt" onchange="importarCSVComidas(event)" style="display:none"/></label>
         <button class="btn-primary" id="btn-nuevo-alimento" onclick="openAlimentoModal()" style="display:none">+ Nuevo alimento</button>
+        <label class="btn-primary" id="btn-importar-csv-alimentos" style="cursor:pointer;display:none;align-items:center;gap:4px">⬆️ Importar<input type="file" accept=".csv,.txt" onchange="importarCSVAlimentos(event)" style="display:none"/></label>
         <button class="btn-primary" id="btn-nuevo-producto" onclick="openProductoModal()" style="display:none">+ Nuevo producto</button>
+        <label class="btn-primary" id="btn-importar-csv-productos" style="cursor:pointer;display:none;align-items:center;gap:4px">⬆️ Importar<input type="file" accept=".csv,.txt" onchange="importarCSVProductos(event)" style="display:none"/></label>
       </div>
       <div class="sub-tabs">
         <button class="sub-tab active" id="sub-custom" onclick="switchSub('custom')">Comidas</button>
@@ -829,14 +841,15 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
         <input type="text" class="form-input" id="food-search" placeholder="Buscar..." oninput="searchFood()" autocomplete="off"/>
         <div class="sr" id="search-results" style="display:none;position:absolute;width:100%;z-index:10"></div>
       </div>
+      <div id="food-info-box" style="display:none;margin-top:6px;background:#f8faff;border:1px solid #dbeafe;border-radius:10px;padding:8px 10px;font-size:11px;color:#374151;line-height:1.5"></div>
     </div>
     <div class="form-row" style="margin-bottom:12px">
       <div>
         <label class="form-lbl">Cantidad</label>
         <div style="display:flex;gap:6px">
           <input type="number" class="form-input" id="meal-qty" placeholder="100" min="1" style="width:70px;flex:none" oninput="scaleFromQty()"/>
-          <select class="form-input" id="meal-qty-unit" style="flex:1;padding:9px 8px" onchange="scaleFromQty()">
-            <option value="g">g</option><option value="ml">ml</option><option value="porc">porc.</option>
+          <select class="form-input" id="meal-qty-unit" style="flex:1;padding:9px 8px" onchange="onQtyUnitChange()">
+            <option value="g">g</option><option value="ml">ml</option><option value="ud">ud</option><option value="porc">porc.</option>
           </select>
         </div>
       </div>
@@ -1085,13 +1098,13 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 <div class="modal-wrap" id="modal-csv-result">
   <div class="modal" style="max-width:380px">
     <div class="modal-hdr">
-      <span class="modal-title">⬆️ Importar comidas CSV</span>
+      <span class="modal-title" id="csv-modal-title">⬆️ Importar CSV</span>
       <button class="modal-close" onclick="closeModal('modal-csv-result')">✕</button>
     </div>
     <div id="csv-result-body"></div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal('modal-csv-result')">Cerrar</button>
-      <button class="btn-save" id="csv-confirm-btn" onclick="confirmarImportCSV()" style="display:none">✅ Importar</button>
+      <button class="btn-save" id="csv-confirm-btn" onclick="_csvConfirmFn&&_csvConfirmFn()" style="display:none">✅ Importar</button>
     </div>
   </div>
 </div>
@@ -1129,7 +1142,17 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
     </div>
     <div class="form-group"><label class="form-lbl">Nombre del producto</label><input type="text" class="form-input" id="pr-name" placeholder="Ej: Salmorejo Mercadona"/></div>
     <div class="form-row" style="margin-bottom:12px">
-      <div><label class="form-lbl">Calorías / porción</label><input type="number" class="form-input" id="pr-cals" placeholder="250" min="0"/></div>
+      <div><label class="form-lbl">Supermercado</label>
+        <select class="form-input" id="pr-super" style="padding:9px 8px">
+          <option value="">— Sin especificar —</option>
+          <option value="Mercadona">🟠 Mercadona</option>
+          <option value="Carrefour">🔵 Carrefour</option>
+          <option value="Lidl">🟡 Lidl</option>
+          <option value="ALDI">🔵 ALDI</option>
+          <option value="Lupa">🟢 Lupa</option>
+          <option value="Otro">⚪ Otro</option>
+        </select>
+      </div>
       <div><label class="form-lbl">Categoría</label>
         <select class="form-input" id="pr-cat" style="padding:9px 8px">
           <option>🧴 Conservas y salsas</option>
@@ -1143,27 +1166,18 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
         </select>
       </div>
     </div>
-    <div class="form-group"><label class="form-lbl">Supermercado</label>
-      <select class="form-input" id="pr-super" style="padding:9px 8px">
-        <option value="">— Sin especificar —</option>
-        <option value="Mercadona">🟠 Mercadona</option>
-        <option value="Carrefour">🔵 Carrefour</option>
-        <option value="Lidl">🟡 Lidl</option>
-        <option value="ALDI">🔵 ALDI</option>
-        <option value="Lupa">🟢 Lupa</option>
-        <option value="Otro">⚪ Otro</option>
-      </select>
-    </div>
     <div class="form-row" style="margin-bottom:12px">
-      <div style="flex:1"><label class="form-lbl">Tamaño de porción (opcional)</label><input type="text" class="form-input" id="pr-porcion" placeholder="Ej: 250g, 1 brik, 1 lata..."/></div>
+      <div style="flex:1"><label class="form-lbl">Porción típica (g) <span style="font-weight:400;color:#9ca3af">opcional</span></label><input type="number" class="form-input" id="pr-porcion" placeholder="Ej: 125" min="1"/></div>
       <div><label class="form-lbl">Elaboración <span style="font-weight:400;color:#9ca3af">(opcional)</span></label>
         <select class="form-input" id="pr-elab" style="padding:9px 8px"><option value="— Sin especificar —">— Sin especificar —</option><option value="Thermomix">Thermomix</option><option value="Airfryer">Airfryer</option><option value="Horno">Horno</option><option value="Sartén">Sartén</option><option value="Cazuela">Cazuela</option><option value="Olla a presión">Olla a presión</option><option value="Microondas">Microondas</option><option value="Vapor">Vapor</option><option value="Barbacoa">Barbacoa</option><option value="Sin cocción">Sin cocción</option><option value="Otro">Otro</option></select>
       </div>
     </div>
-    <div class="macro-grid">
-      <div><label>HC (g)</label><input type="number" class="form-input" id="pr-hc" placeholder="30" min="0" oninput="updatePrHint()"/></div>
-      <div><label>Prot (g)</label><input type="number" class="form-input" id="pr-prot" placeholder="5" min="0" oninput="updatePrHint()"/></div>
-      <div><label>Grasas (g)</label><input type="number" class="form-input" id="pr-gras" placeholder="10" min="0" oninput="updatePrHint()"/></div>
+    <div style="font-size:10px;font-weight:600;color:#6b7280;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">Valores por 100g</div>
+    <div class="macro-grid" style="margin-bottom:4px">
+      <div><label>kcal</label><input type="number" class="form-input" id="pr-cals" placeholder="380" min="0" oninput="updatePrHint()"/></div>
+      <div><label>HC (g)</label><input type="number" class="form-input" id="pr-hc" placeholder="72" min="0" oninput="updatePrHint()"/></div>
+      <div><label>Prot (g)</label><input type="number" class="form-input" id="pr-prot" placeholder="8" min="0" oninput="updatePrHint()"/></div>
+      <div><label>Grasas (g)</label><input type="number" class="form-input" id="pr-gras" placeholder="5" min="0" oninput="updatePrHint()"/></div>
     </div>
     <div id="pr-hint"></div>
     <!-- Micronutrientes opcionales -->
@@ -1171,7 +1185,7 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <span>🔬 Añadir micronutrientes <span style="font-size:9px;font-weight:400;opacity:.7">(opcional)</span></span><span class="vm-arrow">▼</span>
     </button>
     <div id="pr-micro-panel" style="display:none;animation:fadeUp .2s ease both">
-      <div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:8px">Desglose por 100g o por porción</div>
+      <div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:8px">Valores por 100g</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
         <div><label class="form-lbl">Fibra (g)</label><input type="number" class="form-input" id="pr-fibra" placeholder="0" min="0" step="0.1"/></div>
         <div><label class="form-lbl">Azúcares (g)</label><input type="number" class="form-input" id="pr-azucares" placeholder="0" min="0" step="0.1"/></div>
@@ -1216,10 +1230,10 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <button class="sheet-btn-close" onclick="closeSheet('sheet-producto')">✕</button>
     </div>
     <div class="sheet-macros">
-      <div class="sheet-macro"><div class="sheet-macro-lbl">kcal</div><div class="sheet-macro-val" id="sp-cals" style="color:#111827"></div><div class="sheet-macro-unit">por porción</div></div>
-      <div class="sheet-macro"><div class="sheet-macro-lbl">Hidratos</div><div class="sheet-macro-val" id="sp-hc" style="color:#d97706"></div><div class="sheet-macro-unit">g</div></div>
-      <div class="sheet-macro"><div class="sheet-macro-lbl">Proteínas</div><div class="sheet-macro-val" id="sp-prot" style="color:#059669"></div><div class="sheet-macro-unit">g</div></div>
-      <div class="sheet-macro"><div class="sheet-macro-lbl">Grasas</div><div class="sheet-macro-val" id="sp-gras" style="color:#f97316"></div><div class="sheet-macro-unit">g</div></div>
+      <div class="sheet-macro"><div class="sheet-macro-lbl">kcal</div><div class="sheet-macro-val" id="sp-cals" style="color:#111827"></div><div class="sheet-macro-unit">por 100g</div></div>
+      <div class="sheet-macro"><div class="sheet-macro-lbl">Hidratos</div><div class="sheet-macro-val" id="sp-hc" style="color:#d97706"></div><div class="sheet-macro-unit">g/100g</div></div>
+      <div class="sheet-macro"><div class="sheet-macro-lbl">Proteínas</div><div class="sheet-macro-val" id="sp-prot" style="color:#059669"></div><div class="sheet-macro-unit">g/100g</div></div>
+      <div class="sheet-macro"><div class="sheet-macro-lbl">Grasas</div><div class="sheet-macro-val" id="sp-gras" style="color:#f97316"></div><div class="sheet-macro-unit">g/100g</div></div>
     </div>
     <div class="sheet-divider"></div>
     <button class="ver-mas-btn" id="sp-ver-mas-btn" onclick="toggleNutrientesProducto()" style="display:none">
@@ -1640,9 +1654,9 @@ const DESPENSA=[
 {name:'Huevo escalfado',cals:147,hc:0.7,prot:12.5,gras:10.0,cat:'Huevos y lácteos',azucares:0.3,fibra:0,grasasSat:3.2,grasasInsat:6.1,calcio:54,hierro:1.7,potasio:136,sodio:148,magnesio:11,zinc:1.2,vitC:0,vitD:2.1,vitA:160,folatos:47,vitB12:1.1,pesoUd:60},
 {name:'Clara de huevo',cals:47,hc:0.7,prot:10.9,gras:0.0,cat:'Huevos y lácteos',azucares:0.3,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:7,hierro:0.1,potasio:163,sodio:166,magnesio:11,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:4,vitB12:0,pesoUd:35},
 {name:'Yema de huevo',cals:339,hc:0.3,prot:15.9,gras:30.6,cat:'Huevos y lácteos',azucares:0.1,fibra:0,grasasSat:9.5,grasasInsat:20.1,calcio:129,hierro:2.7,potasio:109,sodio:48,magnesio:5,zinc:2.9,vitC:0,vitD:5.4,vitA:381,folatos:146,vitB12:3.3,pesoUd:20},
-{name:'Leche entera',cals:65,hc:4.7,prot:3.2,gras:3.7,cat:'Huevos y lácteos',azucares:4.7,fibra:0,grasasSat:2.4,grasasInsat:1.1,calcio:119,hierro:0.1,potasio:150,sodio:49,magnesio:14,zinc:0.4,vitC:1,vitD:0.1,vitA:46,folatos:5,vitB12:0.4,pesoCuchara:15},
-{name:'Leche semidesnatada',cals:49,hc:4.8,prot:3.3,gras:1.6,cat:'Huevos y lácteos',azucares:4.8,fibra:0,grasasSat:1.0,grasasInsat:0.5,calcio:120,hierro:0.1,potasio:148,sodio:48,magnesio:12,zinc:0.4,vitC:1,vitD:0.1,vitA:45,folatos:5,vitB12:0.4,pesoCuchara:15},
-{name:'Leche desnatada',cals:36,hc:5.0,prot:3.6,gras:0.2,cat:'Huevos y lácteos',azucares:5.0,fibra:0,grasasSat:0.1,grasasInsat:0.1,calcio:122,hierro:0.1,potasio:150,sodio:50,magnesio:12,zinc:0.4,vitC:1,vitD:0.1,vitA:45,folatos:5,vitB12:0.4,pesoCuchara:15},
+{name:'Leche entera',cals:65,hc:4.7,prot:3.2,gras:3.7,cat:'Huevos y lácteos',azucares:4.7,fibra:0,grasasSat:2.4,grasasInsat:1.1,calcio:119,hierro:0.1,potasio:150,sodio:49,magnesio:14,zinc:0.4,vitC:1,vitD:0.1,vitA:46,folatos:5,vitB12:0.4,pesoCuchara:15,pesoUd:200},
+{name:'Leche semidesnatada',cals:49,hc:4.8,prot:3.3,gras:1.6,cat:'Huevos y lácteos',azucares:4.8,fibra:0,grasasSat:1.0,grasasInsat:0.5,calcio:120,hierro:0.1,potasio:148,sodio:48,magnesio:12,zinc:0.4,vitC:1,vitD:0.1,vitA:45,folatos:5,vitB12:0.4,pesoCuchara:15,pesoUd:200},
+{name:'Leche desnatada',cals:36,hc:5.0,prot:3.6,gras:0.2,cat:'Huevos y lácteos',azucares:5.0,fibra:0,grasasSat:0.1,grasasInsat:0.1,calcio:122,hierro:0.1,potasio:150,sodio:50,magnesio:12,zinc:0.4,vitC:1,vitD:0.1,vitA:45,folatos:5,vitB12:0.4,pesoCuchara:15,pesoUd:200},
 {name:'Leche condensada entera',cals:333,hc:54.5,prot:8.2,gras:9.0,cat:'Huevos y lácteos',azucares:54.5,fibra:0,grasasSat:5.7,grasasInsat:2.7,calcio:287,hierro:0.2,potasio:370,sodio:143,magnesio:26,zinc:0.9,vitC:1,vitD:0.2,vitA:90,folatos:7,vitB12:0.9,pesoCuchara:20},
 {name:'Leche condensada desnatada',cals:267,hc:57.0,prot:9.5,gras:0.2,cat:'Huevos y lácteos',azucares:57.0,fibra:0,grasasSat:0.1,grasasInsat:0.1,calcio:300,hierro:0.2,potasio:400,sodio:140,magnesio:29,zinc:1.0,vitC:1,vitD:0.1,vitA:91,folatos:8,vitB12:0.7,pesoCuchara:20},
 {name:'Leche en polvo entera',cals:496,hc:38.4,prot:26.3,gras:27.5,cat:'Huevos y lácteos',azucares:38.4,fibra:0,grasasSat:17.5,grasasInsat:9.0,calcio:910,hierro:0.5,potasio:1330,sodio:372,magnesio:110,zinc:3.0,vitC:5,vitD:0.5,vitA:270,folatos:50,vitB12:2.8},
@@ -1862,30 +1876,30 @@ const DESPENSA=[
 // ══════════════════════════════════════════
 // BEBIDAS
 // ══════════════════════════════════════════
-{name:'Leche de avena',cals:47,hc:6.6,prot:1.0,gras:1.5,cat:'Bebidas',azucares:4.0,fibra:0.4,grasasSat:0.2,grasasInsat:1.2,calcio:120,hierro:0.2,potasio:85,sodio:60,magnesio:10,zinc:0.2,vitC:0,vitD:1.2,vitA:0,folatos:5,vitB12:0.4,pesoCuchara:15},
-{name:'Leche de almendra',cals:24,hc:0.9,prot:0.8,gras:1.4,cat:'Bebidas',azucares:0.1,fibra:0.4,grasasSat:0.1,grasasInsat:1.1,calcio:120,hierro:0.4,potasio:60,sodio:80,magnesio:10,zinc:0.1,vitC:0,vitD:1.0,vitA:0,folatos:3,vitB12:0,pesoCuchara:15},
-{name:'Leche de soja',cals:44,hc:0.9,prot:3.3,gras:2.0,cat:'Bebidas',azucares:0.5,fibra:0.3,grasasSat:0.3,grasasInsat:1.6,calcio:120,hierro:0.3,potasio:118,sodio:45,magnesio:16,zinc:0.3,vitC:0,vitD:1.0,vitA:0,folatos:18,vitB12:0.4,pesoCuchara:15},
-{name:'Leche de coco (bebida)',cals:45,hc:6.0,prot:0.5,gras:2.0,cat:'Bebidas',azucares:2.5,fibra:0,grasasSat:0.9,grasasInsat:1.0,calcio:100,hierro:0.3,potasio:50,sodio:15,magnesio:8,zinc:0.1,vitC:0,vitD:1.0,vitA:0,folatos:3,vitB12:0,pesoCuchara:15},
-{name:'Leche de arroz',cals:47,hc:10.0,prot:0.3,gras:1.0,cat:'Bebidas',azucares:4.8,fibra:0.2,grasasSat:0.1,grasasInsat:0.8,calcio:120,hierro:0.4,potasio:62,sodio:80,magnesio:10,zinc:0.1,vitC:0,vitD:1.0,vitA:0,folatos:3,vitB12:0,pesoCuchara:15},
-{name:'Leche de anacardos',cals:25,hc:2.0,prot:0.5,gras:1.2,cat:'Bebidas',azucares:0.9,fibra:0.2,grasasSat:0.2,grasasInsat:0.9,calcio:120,hierro:0.3,potasio:50,sodio:90,magnesio:8,zinc:0.1,vitC:0,vitD:1.0,vitA:0,folatos:3,vitB12:0,pesoCuchara:15},
-{name:'Zumo de naranja natural',cals:43,hc:9.2,prot:0.7,gras:0.1,cat:'Bebidas',azucares:8.4,fibra:0.2,grasasSat:0.0,grasasInsat:0.0,calcio:11,hierro:0.2,potasio:200,sodio:1,magnesio:11,zinc:0.1,vitC:50,vitD:0,vitA:4,folatos:30,vitB12:0,pesoCuchara:15},
-{name:'Zumo de manzana natural',cals:46,hc:11.3,prot:0.1,gras:0.1,cat:'Bebidas',azucares:10.2,fibra:0.1,grasasSat:0.0,grasasInsat:0.0,calcio:8,hierro:0.3,potasio:119,sodio:4,magnesio:5,zinc:0.0,vitC:1,vitD:0,vitA:0,folatos:0,vitB12:0,pesoCuchara:15},
-{name:'Zumo de tomate',cals:17,hc:3.5,prot:0.9,gras:0.1,cat:'Bebidas',azucares:3.2,fibra:0.4,grasasSat:0.0,grasasInsat:0.0,calcio:10,hierro:0.5,potasio:229,sodio:10,magnesio:11,zinc:0.2,vitC:18,vitD:0,vitA:45,folatos:24,vitB12:0,pesoCuchara:15},
-{name:'Zumo de zanahoria',cals:40,hc:9.3,prot:0.9,gras:0.2,cat:'Bebidas',azucares:8.5,fibra:0.4,grasasSat:0.0,grasasInsat:0.1,calcio:24,hierro:0.5,potasio:292,sodio:68,magnesio:14,zinc:0.2,vitC:9,vitD:0,vitA:956,folatos:8,vitB12:0,pesoCuchara:15},
+{name:'Leche de avena',cals:47,hc:6.6,prot:1.0,gras:1.5,cat:'Bebidas',azucares:4.0,fibra:0.4,grasasSat:0.2,grasasInsat:1.2,calcio:120,hierro:0.2,potasio:85,sodio:60,magnesio:10,zinc:0.2,vitC:0,vitD:1.2,vitA:0,folatos:5,vitB12:0.4,pesoCuchara:15,pesoUd:200},
+{name:'Leche de almendra',cals:24,hc:0.9,prot:0.8,gras:1.4,cat:'Bebidas',azucares:0.1,fibra:0.4,grasasSat:0.1,grasasInsat:1.1,calcio:120,hierro:0.4,potasio:60,sodio:80,magnesio:10,zinc:0.1,vitC:0,vitD:1.0,vitA:0,folatos:3,vitB12:0,pesoCuchara:15,pesoUd:200},
+{name:'Leche de soja',cals:44,hc:0.9,prot:3.3,gras:2.0,cat:'Bebidas',azucares:0.5,fibra:0.3,grasasSat:0.3,grasasInsat:1.6,calcio:120,hierro:0.3,potasio:118,sodio:45,magnesio:16,zinc:0.3,vitC:0,vitD:1.0,vitA:0,folatos:18,vitB12:0.4,pesoCuchara:15,pesoUd:200},
+{name:'Leche de coco (bebida)',cals:45,hc:6.0,prot:0.5,gras:2.0,cat:'Bebidas',azucares:2.5,fibra:0,grasasSat:0.9,grasasInsat:1.0,calcio:100,hierro:0.3,potasio:50,sodio:15,magnesio:8,zinc:0.1,vitC:0,vitD:1.0,vitA:0,folatos:3,vitB12:0,pesoCuchara:15,pesoUd:200},
+{name:'Leche de arroz',cals:47,hc:10.0,prot:0.3,gras:1.0,cat:'Bebidas',azucares:4.8,fibra:0.2,grasasSat:0.1,grasasInsat:0.8,calcio:120,hierro:0.4,potasio:62,sodio:80,magnesio:10,zinc:0.1,vitC:0,vitD:1.0,vitA:0,folatos:3,vitB12:0,pesoCuchara:15,pesoUd:200},
+{name:'Leche de anacardos',cals:25,hc:2.0,prot:0.5,gras:1.2,cat:'Bebidas',azucares:0.9,fibra:0.2,grasasSat:0.2,grasasInsat:0.9,calcio:120,hierro:0.3,potasio:50,sodio:90,magnesio:8,zinc:0.1,vitC:0,vitD:1.0,vitA:0,folatos:3,vitB12:0,pesoCuchara:15,pesoUd:200},
+{name:'Zumo de naranja natural',cals:43,hc:9.2,prot:0.7,gras:0.1,cat:'Bebidas',azucares:8.4,fibra:0.2,grasasSat:0.0,grasasInsat:0.0,calcio:11,hierro:0.2,potasio:200,sodio:1,magnesio:11,zinc:0.1,vitC:50,vitD:0,vitA:4,folatos:30,vitB12:0,pesoCuchara:15,pesoUd:150},
+{name:'Zumo de manzana natural',cals:46,hc:11.3,prot:0.1,gras:0.1,cat:'Bebidas',azucares:10.2,fibra:0.1,grasasSat:0.0,grasasInsat:0.0,calcio:8,hierro:0.3,potasio:119,sodio:4,magnesio:5,zinc:0.0,vitC:1,vitD:0,vitA:0,folatos:0,vitB12:0,pesoCuchara:15,pesoUd:150},
+{name:'Zumo de tomate',cals:17,hc:3.5,prot:0.9,gras:0.1,cat:'Bebidas',azucares:3.2,fibra:0.4,grasasSat:0.0,grasasInsat:0.0,calcio:10,hierro:0.5,potasio:229,sodio:10,magnesio:11,zinc:0.2,vitC:18,vitD:0,vitA:45,folatos:24,vitB12:0,pesoCuchara:15,pesoUd:150},
+{name:'Zumo de zanahoria',cals:40,hc:9.3,prot:0.9,gras:0.2,cat:'Bebidas',azucares:8.5,fibra:0.4,grasasSat:0.0,grasasInsat:0.1,calcio:24,hierro:0.5,potasio:292,sodio:68,magnesio:14,zinc:0.2,vitC:9,vitD:0,vitA:956,folatos:8,vitB12:0,pesoCuchara:15,pesoUd:150},
 {name:'Batido de proteínas (polvo)',cals:400,hc:8.0,prot:80.0,gras:8.0,cat:'Bebidas',azucares:3.0,fibra:1.5,grasasSat:1.5,grasasInsat:5.5,calcio:520,hierro:7.0,potasio:500,sodio:200,magnesio:80,zinc:8.0,vitC:60,vitD:2.0,vitA:200,folatos:80,vitB12:2.0},
 {name:'Proteína whey (polvo)',cals:400,hc:5.0,prot:80.0,gras:8.0,cat:'Bebidas',azucares:3.0,fibra:0.5,grasasSat:1.5,grasasInsat:5.5,calcio:600,hierro:0.5,potasio:460,sodio:180,magnesio:80,zinc:5.0,vitC:0,vitD:0.5,vitA:120,folatos:20,vitB12:1.2},
-{name:'Caldo de verduras',cals:12,hc:2.2,prot:0.4,gras:0.1,cat:'Bebidas',azucares:1.2,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:15,hierro:0.5,potasio:180,sodio:200,magnesio:10,zinc:0.1,vitC:1,vitD:0,vitA:10,folatos:8,vitB12:0,pesoCuchara:15},
-{name:'Caldo de pollo',cals:15,hc:1.0,prot:1.2,gras:0.5,cat:'Bebidas',azucares:0.5,fibra:0,grasasSat:0.1,grasasInsat:0.3,calcio:10,hierro:0.2,potasio:90,sodio:350,magnesio:8,zinc:0.1,vitC:0,vitD:0,vitA:0,folatos:2,vitB12:0.1,pesoCuchara:15},
-{name:'Caldo de carne',cals:20,hc:0.5,prot:2.5,gras:0.8,cat:'Bebidas',azucares:0.2,fibra:0,grasasSat:0.2,grasasInsat:0.5,calcio:8,hierro:0.5,potasio:130,sodio:480,magnesio:10,zinc:0.2,vitC:0,vitD:0,vitA:0,folatos:2,vitB12:0.2,pesoCuchara:15},
-{name:'Caldo de pescado',cals:10,hc:0.5,prot:1.5,gras:0.2,cat:'Bebidas',azucares:0.2,fibra:0,grasasSat:0.0,grasasInsat:0.1,calcio:10,hierro:0.2,potasio:70,sodio:450,magnesio:5,zinc:0.1,vitC:0,vitD:0,vitA:0,folatos:1,vitB12:0.1,pesoCuchara:15},
-{name:'Café solo',cals:2,hc:0.0,prot:0.1,gras:0.0,cat:'Bebidas',azucares:0.0,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:2,hierro:0.0,potasio:49,sodio:2,magnesio:3,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0},
-{name:'Café con leche',cals:47,hc:4.7,prot:3.0,gras:2.0,cat:'Bebidas',azucares:4.7,fibra:0,grasasSat:1.3,grasasInsat:0.7,calcio:120,hierro:0.1,potasio:165,sodio:55,magnesio:14,zinc:0.3,vitC:0,vitD:0.1,vitA:25,folatos:5,vitB12:0.2},
-{name:'Café americano',cals:5,hc:0.5,prot:0.3,gras:0.0,cat:'Bebidas',azucares:0.1,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:2,hierro:0.0,potasio:49,sodio:2,magnesio:3,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0},
-{name:'Té verde',cals:1,hc:0.0,prot:0.2,gras:0.0,cat:'Bebidas',azucares:0.0,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:3,hierro:0.0,potasio:8,sodio:3,magnesio:3,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:6,vitB12:0},
-{name:'Té negro',cals:1,hc:0.3,prot:0.1,gras:0.0,cat:'Bebidas',azucares:0.1,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:0,hierro:0.0,potasio:37,sodio:7,magnesio:3,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:5,vitB12:0},
-{name:'Infusión de manzanilla',cals:1,hc:0.1,prot:0.0,gras:0.0,cat:'Bebidas',azucares:0.0,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:5,hierro:0.1,potasio:8,sodio:1,magnesio:2,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:1,vitB12:0},
-{name:'Agua con gas',cals:0,hc:0.0,prot:0.0,gras:0.0,cat:'Bebidas',azucares:0.0,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:18,hierro:0.0,potasio:0,sodio:10,magnesio:2,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0},
-{name:'Cerveza sin alcohol',cals:22,hc:5.0,prot:0.3,gras:0.0,cat:'Bebidas',azucares:4.5,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:4,hierro:0.0,potasio:34,sodio:8,magnesio:7,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:5,vitB12:0},
+{name:'Caldo de verduras',cals:12,hc:2.2,prot:0.4,gras:0.1,cat:'Bebidas',azucares:1.2,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:15,hierro:0.5,potasio:180,sodio:200,magnesio:10,zinc:0.1,vitC:1,vitD:0,vitA:10,folatos:8,vitB12:0,pesoCuchara:15,pesoUd:200},
+{name:'Caldo de pollo',cals:15,hc:1.0,prot:1.2,gras:0.5,cat:'Bebidas',azucares:0.5,fibra:0,grasasSat:0.1,grasasInsat:0.3,calcio:10,hierro:0.2,potasio:90,sodio:350,magnesio:8,zinc:0.1,vitC:0,vitD:0,vitA:0,folatos:2,vitB12:0.1,pesoCuchara:15,pesoUd:200},
+{name:'Caldo de carne',cals:20,hc:0.5,prot:2.5,gras:0.8,cat:'Bebidas',azucares:0.2,fibra:0,grasasSat:0.2,grasasInsat:0.5,calcio:8,hierro:0.5,potasio:130,sodio:480,magnesio:10,zinc:0.2,vitC:0,vitD:0,vitA:0,folatos:2,vitB12:0.2,pesoCuchara:15,pesoUd:200},
+{name:'Caldo de pescado',cals:10,hc:0.5,prot:1.5,gras:0.2,cat:'Bebidas',azucares:0.2,fibra:0,grasasSat:0.0,grasasInsat:0.1,calcio:10,hierro:0.2,potasio:70,sodio:450,magnesio:5,zinc:0.1,vitC:0,vitD:0,vitA:0,folatos:1,vitB12:0.1,pesoCuchara:15,pesoUd:200},
+{name:'Café solo',cals:2,hc:0.0,prot:0.1,gras:0.0,cat:'Bebidas',azucares:0.0,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:2,hierro:0.0,potasio:49,sodio:2,magnesio:3,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0,pesoUd:50},
+{name:'Café con leche',cals:47,hc:4.7,prot:3.0,gras:2.0,cat:'Bebidas',azucares:4.7,fibra:0,grasasSat:1.3,grasasInsat:0.7,calcio:120,hierro:0.1,potasio:165,sodio:55,magnesio:14,zinc:0.3,vitC:0,vitD:0.1,vitA:25,folatos:5,vitB12:0.2,pesoUd:200},
+{name:'Café americano',cals:5,hc:0.5,prot:0.3,gras:0.0,cat:'Bebidas',azucares:0.1,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:2,hierro:0.0,potasio:49,sodio:2,magnesio:3,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0,pesoUd:150},
+{name:'Té verde',cals:1,hc:0.0,prot:0.2,gras:0.0,cat:'Bebidas',azucares:0.0,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:3,hierro:0.0,potasio:8,sodio:3,magnesio:3,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:6,vitB12:0,pesoUd:200},
+{name:'Té negro',cals:1,hc:0.3,prot:0.1,gras:0.0,cat:'Bebidas',azucares:0.1,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:0,hierro:0.0,potasio:37,sodio:7,magnesio:3,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:5,vitB12:0,pesoUd:200},
+{name:'Infusión de manzanilla',cals:1,hc:0.1,prot:0.0,gras:0.0,cat:'Bebidas',azucares:0.0,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:5,hierro:0.1,potasio:8,sodio:1,magnesio:2,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:1,vitB12:0,pesoUd:200},
+{name:'Agua con gas',cals:0,hc:0.0,prot:0.0,gras:0.0,cat:'Bebidas',azucares:0.0,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:18,hierro:0.0,potasio:0,sodio:10,magnesio:2,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0,pesoUd:250},
+{name:'Cerveza sin alcohol',cals:22,hc:5.0,prot:0.3,gras:0.0,cat:'Bebidas',azucares:4.5,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:4,hierro:0.0,potasio:34,sodio:8,magnesio:7,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:5,vitB12:0,pesoUd:330},
 // ══════════════════════════════════════════
 // ACEITES, GRASAS Y CONDIMENTOS
 // ══════════════════════════════════════════
@@ -1967,7 +1981,7 @@ const DESPENSA=[
 // ══════════════════════════════════════════
 // CONSERVAS Y PREPARADOS
 // ══════════════════════════════════════════
-{name:'Leche de coco (para cocinar)',cals:197,hc:5.5,prot:2.1,gras:19.7,cat:'Otros',azucares:3.3,fibra:2.2,grasasSat:17.5,grasasInsat:1.5,calcio:18,hierro:3.3,potasio:263,sodio:13,magnesio:37,zinc:0.7,vitC:2,vitD:0,vitA:0,folatos:16,vitB12:0,pesoCuchara:16},
+{name:'Leche de coco (para cocinar)',cals:197,hc:5.5,prot:2.1,gras:19.7,cat:'Otros',azucares:3.3,fibra:2.2,grasasSat:17.5,grasasInsat:1.5,calcio:18,hierro:3.3,potasio:263,sodio:13,magnesio:37,zinc:0.7,vitC:2,vitD:0,vitA:0,folatos:16,vitB12:0,pesoCuchara:16,pesoUd:200},
 {name:'Crema de coco',cals:330,hc:6.0,prot:3.0,gras:34.0,cat:'Otros',azucares:4.0,fibra:5.0,grasasSat:30.0,grasasInsat:3.5,calcio:25,hierro:4.0,potasio:400,sodio:15,magnesio:55,zinc:0.8,vitC:2,vitD:0,vitA:0,folatos:20,vitB12:0,pesoCuchara:18},
 {name:'Aceitunas en conserva',cals:145,hc:3.8,prot:1.0,gras:15.3,cat:'Otros',azucares:0.0,fibra:3.2,grasasSat:2.0,grasasInsat:12.0,calcio:88,hierro:3.3,potasio:8,sodio:735,magnesio:27,zinc:0.3,vitC:0,vitD:0,vitA:20,folatos:0,vitB12:0},
 {name:'Pepinillos en vinagre',cals:15,hc:2.5,prot:0.8,gras:0.2,cat:'Otros',azucares:1.5,fibra:1.2,grasasSat:0.0,grasasInsat:0.1,calcio:26,hierro:0.4,potasio:116,sodio:1208,magnesio:12,zinc:0.2,vitC:1,vitD:0,vitA:4,folatos:3,vitB12:0},
@@ -2029,8 +2043,8 @@ const DESPENSA=[
 // ══════════════════════════════════════════
 {name:'Tortilla francesa',cals:155,hc:0.5,prot:11.5,gras:12.0,cat:'Huevos y lácteos',azucares:0,fibra:0,grasasSat:3.0,grasasInsat:7.5,calcio:45,hierro:1.4,potasio:130,sodio:200,magnesio:11,zinc:1.2,vitC:0,vitD:2.0,vitA:150,folatos:35,vitB12:0.9,pesoUd:120},
 {name:'Huevos revueltos',cals:148,hc:0.5,prot:11.0,gras:11.5,cat:'Huevos y lácteos',azucares:0.2,fibra:0,grasasSat:3.8,grasasInsat:6.5,calcio:60,hierro:1.6,potasio:150,sodio:250,magnesio:12,zinc:1.3,vitC:0,vitD:2.5,vitA:180,folatos:40,vitB12:1.1},
-{name:'Leche de cabra',cals:69,hc:4.5,prot:3.6,gras:4.1,cat:'Huevos y lácteos',azucares:4.5,fibra:0,grasasSat:2.7,grasasInsat:1.2,calcio:134,hierro:0.1,potasio:204,sodio:50,magnesio:14,zinc:0.3,vitC:1,vitD:0.1,vitA:57,folatos:1,vitB12:0.1,pesoCuchara:15},
-{name:'Leche de oveja',cals:108,hc:5.1,prot:5.4,gras:7.0,cat:'Huevos y lácteos',azucares:5.1,fibra:0,grasasSat:4.6,grasasInsat:2.0,calcio:193,hierro:0.1,potasio:137,sodio:44,magnesio:18,zinc:0.6,vitC:4,vitD:0.2,vitA:60,folatos:6,vitB12:0.5,pesoCuchara:15},
+{name:'Leche de cabra',cals:69,hc:4.5,prot:3.6,gras:4.1,cat:'Huevos y lácteos',azucares:4.5,fibra:0,grasasSat:2.7,grasasInsat:1.2,calcio:134,hierro:0.1,potasio:204,sodio:50,magnesio:14,zinc:0.3,vitC:1,vitD:0.1,vitA:57,folatos:1,vitB12:0.1,pesoCuchara:15,pesoUd:200},
+{name:'Leche de oveja',cals:108,hc:5.1,prot:5.4,gras:7.0,cat:'Huevos y lácteos',azucares:5.1,fibra:0,grasasSat:4.6,grasasInsat:2.0,calcio:193,hierro:0.1,potasio:137,sodio:44,magnesio:18,zinc:0.6,vitC:4,vitD:0.2,vitA:60,folatos:6,vitB12:0.5,pesoCuchara:15,pesoUd:200},
 {name:'Queso manchego (añejo)',cals:490,hc:0.3,prot:31.0,gras:41.0,cat:'Huevos y lácteos',azucares:0,fibra:0,grasasSat:27.0,grasasInsat:12.0,calcio:780,hierro:0.4,potasio:95,sodio:850,magnesio:30,zinc:4.0,vitC:0,vitD:0.2,vitA:320,folatos:10,vitB12:1.5},
 {name:'Queso Idiazábal',cals:420,hc:1.0,prot:26.5,gras:34.5,cat:'Huevos y lácteos',azucares:0.5,fibra:0,grasasSat:22.0,grasasInsat:10.0,calcio:620,hierro:0.3,potasio:100,sodio:870,magnesio:28,zinc:3.5,vitC:0,vitD:0.2,vitA:300,folatos:8,vitB12:1.2},
 {name:'Queso Tetilla',cals:310,hc:0.5,prot:21.0,gras:25.0,cat:'Huevos y lácteos',azucares:0.2,fibra:0,grasasSat:16.0,grasasInsat:7.5,calcio:500,hierro:0.3,potasio:110,sodio:600,magnesio:22,zinc:2.8,vitC:0,vitD:0.2,vitA:250,folatos:8,vitB12:1.0},
@@ -2119,15 +2133,15 @@ const DESPENSA=[
 // ══════════════════════════════════════════
 // NUEVOS ALIMENTOS BEDCA — BEBIDAS
 // ══════════════════════════════════════════
-{name:'Cerveza (lager)',cals:43,hc:3.6,prot:0.5,gras:0.0,cat:'Bebidas',azucares:0.3,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:5,hierro:0.0,potasio:27,sodio:4,magnesio:8,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:6,vitB12:0},
-{name:'Vino tinto',cals:85,hc:2.6,prot:0.1,gras:0.0,cat:'Bebidas',azucares:0.6,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:8,hierro:0.5,potasio:127,sodio:4,magnesio:12,zinc:0.1,vitC:0,vitD:0,vitA:0,folatos:1,vitB12:0},
-{name:'Vino blanco',cals:77,hc:2.6,prot:0.1,gras:0.0,cat:'Bebidas',azucares:1.5,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:9,hierro:0.3,potasio:71,sodio:5,magnesio:10,zinc:0.1,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0},
-{name:'Zumo de naranja envasado',cals:44,hc:10.4,prot:0.5,gras:0.2,cat:'Bebidas',azucares:8.4,fibra:0.2,grasasSat:0.0,grasasInsat:0.1,calcio:11,hierro:0.2,potasio:200,sodio:1,magnesio:11,zinc:0.1,vitC:50,vitD:0,vitA:4,folatos:30,vitB12:0,pesoCuchara:15},
-{name:'Horchata de chufa',cals:90,hc:18.0,prot:0.4,gras:1.8,cat:'Bebidas',azucares:14.0,fibra:0.4,grasasSat:0.4,grasasInsat:1.3,calcio:25,hierro:1.0,potasio:95,sodio:15,magnesio:22,zinc:0.2,vitC:0,vitD:0,vitA:0,folatos:5,vitB12:0,pesoCuchara:16},
-{name:'Batido de cacao',cals:80,hc:12.5,prot:3.5,gras:2.0,cat:'Bebidas',azucares:12.0,fibra:0.3,grasasSat:1.2,grasasInsat:0.7,calcio:125,hierro:0.4,potasio:200,sodio:70,magnesio:20,zinc:0.5,vitC:0,vitD:0.5,vitA:40,folatos:5,vitB12:0.4},
-{name:'Refresco cola',cals:42,hc:10.6,prot:0.0,gras:0.0,cat:'Bebidas',azucares:10.6,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:0,hierro:0.0,potasio:1,sodio:4,magnesio:0,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0},
-{name:'Leche de macadamia',cals:50,hc:1.0,prot:0.5,gras:5.0,cat:'Bebidas',azucares:0.5,fibra:0.3,grasasSat:1.0,grasasInsat:3.7,calcio:100,hierro:0.1,potasio:50,sodio:80,magnesio:10,zinc:0.1,vitC:0,vitD:1.0,vitA:0,folatos:0,vitB12:0.4,pesoCuchara:15},
-{name:'Leche de espelta',cals:55,hc:9.5,prot:1.8,gras:1.2,cat:'Bebidas',azucares:4.5,fibra:0.5,grasasSat:0.2,grasasInsat:0.9,calcio:80,hierro:0.5,potasio:120,sodio:50,magnesio:15,zinc:0.3,vitC:0,vitD:0.5,vitA:0,folatos:8,vitB12:0.1,pesoCuchara:15},
+{name:'Cerveza (lager)',cals:43,hc:3.6,prot:0.5,gras:0.0,cat:'Bebidas',azucares:0.3,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:5,hierro:0.0,potasio:27,sodio:4,magnesio:8,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:6,vitB12:0,pesoUd:330},
+{name:'Vino tinto',cals:85,hc:2.6,prot:0.1,gras:0.0,cat:'Bebidas',azucares:0.6,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:8,hierro:0.5,potasio:127,sodio:4,magnesio:12,zinc:0.1,vitC:0,vitD:0,vitA:0,folatos:1,vitB12:0,pesoUd:150},
+{name:'Vino blanco',cals:77,hc:2.6,prot:0.1,gras:0.0,cat:'Bebidas',azucares:1.5,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:9,hierro:0.3,potasio:71,sodio:5,magnesio:10,zinc:0.1,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0,pesoUd:150},
+{name:'Zumo de naranja envasado',cals:44,hc:10.4,prot:0.5,gras:0.2,cat:'Bebidas',azucares:8.4,fibra:0.2,grasasSat:0.0,grasasInsat:0.1,calcio:11,hierro:0.2,potasio:200,sodio:1,magnesio:11,zinc:0.1,vitC:50,vitD:0,vitA:4,folatos:30,vitB12:0,pesoCuchara:15,pesoUd:150},
+{name:'Horchata de chufa',cals:90,hc:18.0,prot:0.4,gras:1.8,cat:'Bebidas',azucares:14.0,fibra:0.4,grasasSat:0.4,grasasInsat:1.3,calcio:25,hierro:1.0,potasio:95,sodio:15,magnesio:22,zinc:0.2,vitC:0,vitD:0,vitA:0,folatos:5,vitB12:0,pesoCuchara:16,pesoUd:200},
+{name:'Batido de cacao',cals:80,hc:12.5,prot:3.5,gras:2.0,cat:'Bebidas',azucares:12.0,fibra:0.3,grasasSat:1.2,grasasInsat:0.7,calcio:125,hierro:0.4,potasio:200,sodio:70,magnesio:20,zinc:0.5,vitC:0,vitD:0.5,vitA:40,folatos:5,vitB12:0.4,pesoUd:200},
+{name:'Refresco cola',cals:42,hc:10.6,prot:0.0,gras:0.0,cat:'Bebidas',azucares:10.6,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:0,hierro:0.0,potasio:1,sodio:4,magnesio:0,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0,pesoUd:250},
+{name:'Leche de macadamia',cals:50,hc:1.0,prot:0.5,gras:5.0,cat:'Bebidas',azucares:0.5,fibra:0.3,grasasSat:1.0,grasasInsat:3.7,calcio:100,hierro:0.1,potasio:50,sodio:80,magnesio:10,zinc:0.1,vitC:0,vitD:1.0,vitA:0,folatos:0,vitB12:0.4,pesoCuchara:15,pesoUd:200},
+{name:'Leche de espelta',cals:55,hc:9.5,prot:1.8,gras:1.2,cat:'Bebidas',azucares:4.5,fibra:0.5,grasasSat:0.2,grasasInsat:0.9,calcio:80,hierro:0.5,potasio:120,sodio:50,magnesio:15,zinc:0.3,vitC:0,vitD:0.5,vitA:0,folatos:8,vitB12:0.1,pesoCuchara:15,pesoUd:200},
 // ══════════════════════════════════════════
 // NUEVOS ALIMENTOS BEDCA — ACEITES, GRASAS Y CONDIMENTOS
 // ══════════════════════════════════════════
@@ -2170,7 +2184,7 @@ const DESPENSA=[
 // ══════════════════════════════════════════
 {name:'Natillas caseras',cals:125,hc:17.5,prot:4.0,gras:4.5,cat:'Huevos y lácteos',azucares:15.5,fibra:0,grasasSat:2.5,grasasInsat:1.8,calcio:130,hierro:0.2,potasio:180,sodio:55,magnesio:14,zinc:0.5,vitC:0,vitD:0.5,vitA:45,folatos:8,vitB12:0.4,pesoUd:120},
 {name:'Arroz con leche (casero)',cals:135,hc:24.0,prot:3.5,gras:3.0,cat:'Huevos y lácteos',azucares:15.0,fibra:0.2,grasasSat:2.0,grasasInsat:0.8,calcio:110,hierro:0.4,potasio:145,sodio:50,magnesio:12,zinc:0.4,vitC:0,vitD:0.3,vitA:30,folatos:5,vitB12:0.3,pesoUd:200},
-{name:'Leche merengada',cals:90,hc:16.5,prot:3.5,gras:1.5,cat:'Bebidas',azucares:14.5,fibra:0,grasasSat:1.0,grasasInsat:0.4,calcio:120,hierro:0.1,potasio:160,sodio:50,magnesio:12,zinc:0.4,vitC:0,vitD:0.2,vitA:30,folatos:5,vitB12:0.3,pesoCuchara:16},
+{name:'Leche merengada',cals:90,hc:16.5,prot:3.5,gras:1.5,cat:'Bebidas',azucares:14.5,fibra:0,grasasSat:1.0,grasasInsat:0.4,calcio:120,hierro:0.1,potasio:160,sodio:50,magnesio:12,zinc:0.4,vitC:0,vitD:0.2,vitA:30,folatos:5,vitB12:0.3,pesoCuchara:16,pesoUd:200},
 {name:'Turrón de Jijona',cals:557,hc:39.5,prot:13.0,gras:38.0,cat:'Otros',azucares:37.0,fibra:3.5,grasasSat:4.5,grasasInsat:32.5,calcio:170,hierro:2.5,potasio:610,sodio:60,magnesio:130,zinc:1.8,vitC:0,vitD:0,vitA:0,folatos:25,vitB12:0,pesoUd:40},
 {name:'Turrón de Alicante',cals:490,hc:51.5,prot:11.5,gras:28.0,cat:'Otros',azucares:50.0,fibra:3.0,grasasSat:3.5,grasasInsat:23.5,calcio:155,hierro:2.0,potasio:520,sodio:25,magnesio:110,zinc:1.5,vitC:0,vitD:0,vitA:0,folatos:22,vitB12:0,pesoUd:40},
 {name:'Polvorón',cals:520,hc:57.0,prot:7.5,gras:30.0,cat:'Otros',azucares:28.0,fibra:3.5,grasasSat:12.0,grasasInsat:16.5,calcio:45,hierro:1.5,potasio:170,sodio:80,magnesio:30,zinc:0.8,vitC:0,vitD:0,vitA:0,folatos:15,vitB12:0,pesoUd:30},
@@ -2254,7 +2268,7 @@ const DESPENSA=[
 // ══════════════════════════════════════════
 {name:'Huevo de codorniz',cals:158,hc:0.4,prot:13.1,gras:11.1,cat:'Huevos y lácteos',azucares:0.4,fibra:0,grasasSat:3.6,grasasInsat:7.0,calcio:64,hierro:3.6,potasio:132,sodio:141,magnesio:13,zinc:1.8,vitC:0,vitD:1.4,vitA:156,folatos:66,vitB12:1.6,pesoUd:10},
 {name:'Huevo de pato',cals:185,hc:1.5,prot:12.8,gras:13.8,cat:'Huevos y lácteos',azucares:0.5,fibra:0,grasasSat:3.7,grasasInsat:9.4,calcio:64,hierro:2.7,potasio:222,sodio:146,magnesio:17,zinc:1.4,vitC:0,vitD:1.5,vitA:194,folatos:80,vitB12:3.8,pesoUd:80},
-{name:'Leche de búfala',cals:110,hc:4.9,prot:4.5,gras:8.0,cat:'Huevos y lácteos',azucares:4.9,fibra:0,grasasSat:5.2,grasasInsat:2.3,calcio:195,hierro:0.1,potasio:178,sodio:52,magnesio:31,zinc:0.7,vitC:2,vitD:0.2,vitA:65,folatos:6,vitB12:0.5,pesoCuchara:15},
+{name:'Leche de búfala',cals:110,hc:4.9,prot:4.5,gras:8.0,cat:'Huevos y lácteos',azucares:4.9,fibra:0,grasasSat:5.2,grasasInsat:2.3,calcio:195,hierro:0.1,potasio:178,sodio:52,magnesio:31,zinc:0.7,vitC:2,vitD:0.2,vitA:65,folatos:6,vitB12:0.5,pesoCuchara:15,pesoUd:200},
 {name:'Queso Grana Padano',cals:384,hc:0.0,prot:33.0,gras:28.0,cat:'Huevos y lácteos',azucares:0,fibra:0,grasasSat:18.0,grasasInsat:8.5,calcio:1165,hierro:0.7,potasio:116,sodio:650,magnesio:43,zinc:4.6,vitC:0,vitD:0.3,vitA:300,folatos:10,vitB12:1.4},
 {name:'Queso Pecorino',cals:415,hc:0.5,prot:26.0,gras:33.0,cat:'Huevos y lácteos',azucares:0.2,fibra:0,grasasSat:21.5,grasasInsat:9.5,calcio:760,hierro:0.5,potasio:100,sodio:1200,magnesio:25,zinc:3.0,vitC:0,vitD:0.2,vitA:310,folatos:7,vitB12:1.6},
 {name:'Queso Gruyère',cals:396,hc:0.4,prot:29.8,gras:30.4,cat:'Huevos y lácteos',azucares:0.1,fibra:0,grasasSat:19.6,grasasInsat:9.5,calcio:1011,hierro:0.2,potasio:81,sodio:336,magnesio:36,zinc:3.9,vitC:0,vitD:0.2,vitA:270,folatos:10,vitB12:1.6},
@@ -2341,19 +2355,19 @@ const DESPENSA=[
 // ══════════════════════════════════════════
 // BEBIDAS — AMPLIACIÓN
 // ══════════════════════════════════════════
-{name:'Kéfir de agua',cals:22,hc:5.0,prot:0.1,gras:0.1,cat:'Bebidas',azucares:3.0,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:8,hierro:0.0,potasio:12,sodio:5,magnesio:5,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0},
-{name:'Kombucha natural',cals:35,hc:8.5,prot:0.1,gras:0.0,cat:'Bebidas',azucares:4.5,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:5,hierro:0.1,potasio:40,sodio:10,magnesio:5,zinc:0.1,vitC:0,vitD:0,vitA:0,folatos:2,vitB12:0.1},
-{name:'Agua de coco natural',cals:19,hc:3.7,prot:0.7,gras:0.2,cat:'Bebidas',azucares:2.6,fibra:1.1,grasasSat:0.2,grasasInsat:0.0,calcio:24,hierro:0.3,potasio:250,sodio:105,magnesio:25,zinc:0.1,vitC:2,vitD:0,vitA:0,folatos:3,vitB12:0,pesoCuchara:15},
-{name:'Caldo de huesos',cals:38,hc:0.5,prot:6.5,gras:1.0,cat:'Bebidas',azucares:0,fibra:0,grasasSat:0.4,grasasInsat:0.5,calcio:12,hierro:0.3,potasio:80,sodio:310,magnesio:8,zinc:0.5,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0.1},
-{name:'Zumo de remolacha',cals:43,hc:9.9,prot:1.6,gras:0.2,cat:'Bebidas',azucares:7.3,fibra:0.2,grasasSat:0.0,grasasInsat:0.1,calcio:16,hierro:0.7,potasio:325,sodio:78,magnesio:20,zinc:0.3,vitC:4,vitD:0,vitA:1,folatos:80,vitB12:0,pesoCuchara:15},
-{name:'Zumo de apio',cals:16,hc:3.0,prot:0.8,gras:0.3,cat:'Bebidas',azucares:1.4,fibra:0.5,grasasSat:0.1,grasasInsat:0.2,calcio:40,hierro:0.3,potasio:280,sodio:80,magnesio:12,zinc:0.2,vitC:3,vitD:0,vitA:29,folatos:36,vitB12:0,pesoCuchara:15},
+{name:'Kéfir de agua',cals:22,hc:5.0,prot:0.1,gras:0.1,cat:'Bebidas',azucares:3.0,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:8,hierro:0.0,potasio:12,sodio:5,magnesio:5,zinc:0.0,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0,pesoUd:200},
+{name:'Kombucha natural',cals:35,hc:8.5,prot:0.1,gras:0.0,cat:'Bebidas',azucares:4.5,fibra:0,grasasSat:0.0,grasasInsat:0.0,calcio:5,hierro:0.1,potasio:40,sodio:10,magnesio:5,zinc:0.1,vitC:0,vitD:0,vitA:0,folatos:2,vitB12:0.1,pesoUd:250},
+{name:'Agua de coco natural',cals:19,hc:3.7,prot:0.7,gras:0.2,cat:'Bebidas',azucares:2.6,fibra:1.1,grasasSat:0.2,grasasInsat:0.0,calcio:24,hierro:0.3,potasio:250,sodio:105,magnesio:25,zinc:0.1,vitC:2,vitD:0,vitA:0,folatos:3,vitB12:0,pesoCuchara:15,pesoUd:250},
+{name:'Caldo de huesos',cals:38,hc:0.5,prot:6.5,gras:1.0,cat:'Bebidas',azucares:0,fibra:0,grasasSat:0.4,grasasInsat:0.5,calcio:12,hierro:0.3,potasio:80,sodio:310,magnesio:8,zinc:0.5,vitC:0,vitD:0,vitA:0,folatos:0,vitB12:0.1,pesoUd:200},
+{name:'Zumo de remolacha',cals:43,hc:9.9,prot:1.6,gras:0.2,cat:'Bebidas',azucares:7.3,fibra:0.2,grasasSat:0.0,grasasInsat:0.1,calcio:16,hierro:0.7,potasio:325,sodio:78,magnesio:20,zinc:0.3,vitC:4,vitD:0,vitA:1,folatos:80,vitB12:0,pesoCuchara:15,pesoUd:150},
+{name:'Zumo de apio',cals:16,hc:3.0,prot:0.8,gras:0.3,cat:'Bebidas',azucares:1.4,fibra:0.5,grasasSat:0.1,grasasInsat:0.2,calcio:40,hierro:0.3,potasio:280,sodio:80,magnesio:12,zinc:0.2,vitC:3,vitD:0,vitA:29,folatos:36,vitB12:0,pesoCuchara:15,pesoUd:150},
 {name:'Zumo verde (espinaca+manzana)',cals:38,hc:8.5,prot:1.0,gras:0.2,cat:'Bebidas',azucares:7.0,fibra:0.5,grasasSat:0.0,grasasInsat:0.1,calcio:30,hierro:0.8,potasio:280,sodio:25,magnesio:18,zinc:0.2,vitC:20,vitD:0,vitA:120,folatos:50,vitB12:0,pesoCuchara:15},
-{name:'Leche dorada (golden milk)',cals:88,hc:8.5,prot:3.0,gras:4.5,cat:'Bebidas',azucares:6.5,fibra:0.5,grasasSat:2.8,grasasInsat:1.5,calcio:110,hierro:0.8,potasio:180,sodio:50,magnesio:20,zinc:0.4,vitC:0,vitD:0.5,vitA:20,folatos:5,vitB12:0.2},
-{name:'Matcha (en polvo)',cals:305,hc:39.5,prot:29.0,gras:5.0,cat:'Bebidas',azucares:0,fibra:37.6,grasasSat:0.7,grasasInsat:4.0,calcio:272,hierro:17.0,potasio:2160,sodio:7,magnesio:230,zinc:5.5,vitC:60,vitD:0,vitA:0,folatos:0,vitB12:0,pesoCuchara:4},
-{name:'Café latte',cals:72,hc:7.0,prot:3.8,gras:2.9,cat:'Bebidas',azucares:6.5,fibra:0,grasasSat:1.8,grasasInsat:1.0,calcio:120,hierro:0.1,potasio:195,sodio:60,magnesio:15,zinc:0.4,vitC:0,vitD:0.2,vitA:30,folatos:5,vitB12:0.3},
-{name:'Chocolate caliente',cals:95,hc:14.0,prot:4.5,gras:3.0,cat:'Bebidas',azucares:12.5,fibra:0.8,grasasSat:1.8,grasasInsat:1.0,calcio:150,hierro:0.8,potasio:260,sodio:65,magnesio:28,zinc:0.5,vitC:0,vitD:0.3,vitA:40,folatos:6,vitB12:0.4},
-{name:'Té de hibisco',cals:37,hc:8.7,prot:0.4,gras:0.6,cat:'Bebidas',azucares:0,fibra:0,grasasSat:0.1,grasasInsat:0.4,calcio:8,hierro:0.9,potasio:20,sodio:3,magnesio:4,zinc:0.1,vitC:18,vitD:0,vitA:0,folatos:0,vitB12:0},
-{name:'Bebida de avena barista',cals:68,hc:10.5,prot:1.2,gras:2.2,cat:'Bebidas',azucares:5.5,fibra:0.8,grasasSat:0.2,grasasInsat:1.8,calcio:120,hierro:0.5,potasio:90,sodio:65,magnesio:12,zinc:0.2,vitC:0,vitD:1.2,vitA:0,folatos:5,vitB12:0.4},
+{name:'Leche dorada (golden milk)',cals:88,hc:8.5,prot:3.0,gras:4.5,cat:'Bebidas',azucares:6.5,fibra:0.5,grasasSat:2.8,grasasInsat:1.5,calcio:110,hierro:0.8,potasio:180,sodio:50,magnesio:20,zinc:0.4,vitC:0,vitD:0.5,vitA:20,folatos:5,vitB12:0.2,pesoUd:200},
+{name:'Matcha (en polvo)',cals:305,hc:39.5,prot:29.0,gras:5.0,cat:'Bebidas',azucares:0,fibra:37.6,grasasSat:0.7,grasasInsat:4.0,calcio:272,hierro:17.0,potasio:2160,sodio:7,magnesio:230,zinc:5.5,vitC:60,vitD:0,vitA:0,folatos:0,vitB12:0,pesoCuchara:4,pesoUd:200},
+{name:'Café latte',cals:72,hc:7.0,prot:3.8,gras:2.9,cat:'Bebidas',azucares:6.5,fibra:0,grasasSat:1.8,grasasInsat:1.0,calcio:120,hierro:0.1,potasio:195,sodio:60,magnesio:15,zinc:0.4,vitC:0,vitD:0.2,vitA:30,folatos:5,vitB12:0.3,pesoUd:250},
+{name:'Chocolate caliente',cals:95,hc:14.0,prot:4.5,gras:3.0,cat:'Bebidas',azucares:12.5,fibra:0.8,grasasSat:1.8,grasasInsat:1.0,calcio:150,hierro:0.8,potasio:260,sodio:65,magnesio:28,zinc:0.5,vitC:0,vitD:0.3,vitA:40,folatos:6,vitB12:0.4,pesoUd:200},
+{name:'Té de hibisco',cals:37,hc:8.7,prot:0.4,gras:0.6,cat:'Bebidas',azucares:0,fibra:0,grasasSat:0.1,grasasInsat:0.4,calcio:8,hierro:0.9,potasio:20,sodio:3,magnesio:4,zinc:0.1,vitC:18,vitD:0,vitA:0,folatos:0,vitB12:0,pesoUd:200},
+{name:'Bebida de avena barista',cals:68,hc:10.5,prot:1.2,gras:2.2,cat:'Bebidas',azucares:5.5,fibra:0.8,grasasSat:0.2,grasasInsat:1.8,calcio:120,hierro:0.5,potasio:90,sodio:65,magnesio:12,zinc:0.2,vitC:0,vitD:1.2,vitA:0,folatos:5,vitB12:0.4,pesoUd:200},
 // ══════════════════════════════════════════
 // CONDIMENTOS, SALSAS Y OTROS — AMPLIACIÓN
 // ══════════════════════════════════════════
@@ -2428,7 +2442,17 @@ const CATS_INFO=[
   {cat:'Otros',                 icon:'🍴', desc:'Tapas, snacks, postres, bocadillos, wraps y todo lo que no encaje en las anteriores.'},
 ];
 
-// Mapeo de categorías antiguas a las nuevas unificadas
+// Mapeo automático de categoría de compra → categoría nutricional
+const COMPRACAT_TO_NUTCAT={
+  '🥦 Frutas y verduras':'Verduras y hortalizas',
+  '🥩 Carnes y pescados':'Carnes',
+  '🥛 Lácteos y huevos':'Huevos y lácteos',
+  '🌾 Cereales y legumbres':'Cereales y pasta',
+  '🧴 Conservas y salsas':'Otros',
+  '❄️ Congelados':'Otros',
+  '🧂 Especias y condimentos':'Otros',
+  '🛍 Otros':'Otros',
+};
 const CAT_NORMALIZE_MAP={
   'Pasta y arroz':'Cereales y pasta','Cereales y féculas':'Cereales y pasta',
   'Carnes a la plancha':'Carnes','Carnes guisadas':'Carnes','Carnes y aves':'Carnes',
@@ -2535,9 +2559,11 @@ function switchSub(sub){
   const isProductos=(sub==='productos');
   document.getElementById('desp-title').textContent=isComidas?'Comidas':isAlimentos?'Mi despensa':'Productos';
   document.getElementById('btn-nueva-comida').style.display=isComidas?'':'none';
-  document.getElementById('btn-importar-csv').style.display=isComidas?'':'none';
+  document.getElementById('btn-importar-csv').style.display=isComidas?'flex':'none';
   document.getElementById('btn-nuevo-alimento').style.display=isAlimentos?'':'none';
+  document.getElementById('btn-importar-csv-alimentos').style.display=isAlimentos?'flex':'none';
   document.getElementById('btn-nuevo-producto').style.display=isProductos?'':'none';
+  document.getElementById('btn-importar-csv-productos').style.display=isProductos?'flex':'none';
   if(isProductos)renderProductosList('');
 }
 
@@ -2554,7 +2580,11 @@ function changeMonth(dir){currentMonthOffset+=dir;renderMonth()}
 
 function closeModal(id){
   document.getElementById(id).classList.remove('active');
-  if(id==='modal-meal'){document.getElementById('search-results').style.display='none';}
+  if(id==='modal-meal'){
+    document.getElementById('search-results').style.display='none';
+    const box=document.getElementById('food-info-box');
+    if(box) box.style.display='none';
+  }
   if(id==='modal-builder'){document.getElementById('cb-results').style.display='none';}
 }
 
@@ -2676,8 +2706,13 @@ function openModal(dayIdx,editIdx){
     document.getElementById('meal-hc').value=m.hc;
     document.getElementById('meal-prot').value=m.prot;
     document.getElementById('meal-gras').value=m.gras;
+    // Mostrar info box si podemos encontrar el alimento
+    const f=getAllFoodsForSearch().find(x=>x.name===m.name);
+    if(f){baseFood=f;_showFoodInfoBox(f);}
+    else{const b=document.getElementById('food-info-box');if(b)b.style.display='none';}
   }else{
     document.getElementById('modal-title').textContent='Añadir comida';
+    const b=document.getElementById('food-info-box');if(b)b.style.display='none';
     ['food-search','meal-cals','meal-hc','meal-prot','meal-gras'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('meal-qty').value='';
     document.getElementById('meal-qty-unit').value='g';
@@ -2693,18 +2728,26 @@ searchFood._refs=[];
 function searchFood(){
   const q=document.getElementById('food-search').value.toLowerCase();
   const el=document.getElementById('search-results');
-  if(q.length<2){el.style.display='none';return}
+  // Hide info box when user starts typing again
+  if(q.length<2){
+    el.style.display='none';
+    return;
+  }
   let matches=getAllFoodsForSearch().filter(f=>f.name.toLowerCase().includes(q));
   matches.sort((a,b)=>(favoritas.has(b.name)?1:0)-(favoritas.has(a.name)?1:0));
   matches=matches.slice(0,7);
   if(!matches.length){el.style.display='none';return}
   searchFood._refs=[];
   el.innerHTML=matches.map((f,i)=>{
-    const isMia=misComidas.includes(f)||misAlimentos.includes(f);
     const isProducto=f._isProducto||misProductos.some(p=>p.name===f.name&&p.cals===f.cals);
-    const badge=isProducto?'<span class="si-badge" style="background:#eff6ff;color:#1e3a5f;border:1px solid #bfdbfe">producto</span>':isMia?'<span class="si-badge">mío</span>':'';
-    const info=isProducto?`${f.cals} kcal · HC ${f.hcG||0}g · P ${f.protG||0}g · G ${f.grasG||0}g${f.porcion?' · '+f.porcion:''}`:
-      `${f.cals} kcal · HC ${f.hc}% · P ${f.prot}% · G ${f.gras}%`;
+    const isComida=misComidas.some(c=>c.name===f.name&&c.cals===f.cals);
+    const isAlimento=misAlimentos.some(a=>a.name===f.name&&a.cals===f.cals);
+    let badge='';
+    if(isProducto) badge='<span class="si-badge" style="background:#eff6ff;color:#1e3a5f;border:1px solid #bfdbfe">supermercado</span>';
+    else if(isComida) badge='<span class="si-badge" style="background:#f0fdf4;color:#065f46;border:1px solid #a7f3d0">comida</span>';
+    else if(isAlimento) badge='<span class="si-badge" style="background:#fefce8;color:#713f12;border:1px solid #fde68a">alimento</span>';
+    else badge='<span class="si-badge" style="background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb">despensa</span>';
+    const info=isProducto?`${f.cals} kcal · HC ${f.hcG||0}g · P ${f.protG||0}g · G ${f.grasG||0}g${f.porcion?' · '+f.porcion:''}`:`${f.cals} kcal · HC ${f.hc}% · P ${f.prot}% · G ${f.gras}%`;
     const favMark=favoritas.has(f.name)?'⭐ ':''; searchFood._refs[i]=f;
     return`<div class="si" onclick="selectFood(searchFood._refs[${i}])"><div><div>${favMark}${f.name}</div><div class="si-info">${info}</div></div>${badge}</div>`;
   }).join('');
@@ -2714,24 +2757,90 @@ function searchFood(){
 function selectFood(f){
   baseFood=f;
   document.getElementById('food-search').value=f.name;
-  const qty=parseFloat(document.getElementById('meal-qty').value)||100;
+  // Auto-seleccionar ud si el alimento tiene pesoUd
+  if(f.pesoUd){
+    document.getElementById('meal-qty-unit').value='ud';
+    document.getElementById('meal-qty').value='1';
+  } else if(misComidas.some(c=>c.name===f.name&&c.cals===f.cals)){
+    document.getElementById('meal-qty-unit').value='porc';
+    document.getElementById('meal-qty').value='1';
+  }
+  const qty=parseFloat(document.getElementById('meal-qty').value)||1;
   const unit=document.getElementById('meal-qty-unit').value;
-  // Si la comida tiene kcalOverride, usarlo directamente (es una comida completa, no un alimento por 100g)
   const calBase=f.kcalOverride!=null?f.kcalOverride:f.cals;
-  document.getElementById('meal-cals').value=Math.round(calBase*(unit==='porc'?qty:qty/100));
+  let factor;
+  if(unit==='porc') factor=qty;
+  else if(unit==='ud') factor=qty*(f.pesoUd||100)/100;
+  else factor=qty/100;
+  document.getElementById('meal-cals').value=Math.round(calBase*factor);
   document.getElementById('meal-hc').value=f.hc;
   document.getElementById('meal-prot').value=f.prot;
   document.getElementById('meal-gras').value=f.gras;
   document.getElementById('search-results').style.display='none';
   updateMacroSum();
+  _showFoodInfoBox(f);
+}
+
+function _showFoodInfoBox(f){
+  const box=document.getElementById('food-info-box');
+  if(!box) return;
+  const isProducto=f._isProducto||misProductos.some(p=>p.name===f.name&&p.cals===f.cals);
+  const isComida=misComidas.some(c=>c.name===f.name&&c.cals===f.cals);
+  const isAlimento=misAlimentos.some(a=>a.name===f.name&&a.cals===f.cals);
+  let tipo,color,icono,lineas=[];
+  if(isProducto){
+    tipo='supermercado';color='#1e3a5f';icono='🛍️';
+    lineas.push('<b>Valores por 100g</b>');
+    if(f.pesoUd) lineas.push(`· <b>ud</b> = ${f.pesoUd}g (porción típica)`);
+    if(f.pesoCuchara) lineas.push(`· <b>cuchara</b> = ${f.pesoCuchara}g`);
+    if(!f.pesoUd&&!f.pesoCuchara) lineas.push('· Introduce la cantidad en gramos');
+    lineas.push('· kcal y macros se calculan automáticamente');
+  } else if(isComida){
+    tipo='comida';color='#065f46';icono='🍽️';
+    const raciones=f.raciones||1;
+    lineas.push(`<b>Valores por ración</b> (receta para ${raciones} ${raciones===1?'ración':'raciones'})`);
+    lineas.push(`· Usa <b>porc.</b> e introduce <b>1</b> para una ración completa`);
+    if(raciones>1) lineas.push(`· O introduce <b>${raciones}</b> si vas a comer toda la receta`);
+    lineas.push('· kcal y macros se calculan automáticamente');
+  } else {
+    tipo=isAlimento?'alimento':'despensa';color='#713f12';icono='🫙';
+    lineas.push('<b>Valores por 100g</b>');
+    if(f.pesoUd) lineas.push(`· <b>ud</b> = ${f.pesoUd}g (1 vaso/taza)`);
+    if(f.pesoCuchara) lineas.push(`· <b>cuchara</b> = ${f.pesoCuchara}g`);
+    if(!f.pesoUd&&!f.pesoCuchara) lineas.push('· Introduce la cantidad en gramos o ml');
+    lineas.push('· kcal y macros se calculan automáticamente');
+  }
+  box.innerHTML=`<div style="display:flex;gap:6px;align-items:flex-start">
+    <span style="font-size:14px;flex-shrink:0">${icono}</span>
+    <div>
+      <span style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.4px">${tipo}</span>
+      <div style="margin-top:2px">${lineas.join('<br>')}</div>
+    </div>
+  </div>`;
+  box.style.display='block';
+}
+
+function onQtyUnitChange(){
+  const unit=document.getElementById('meal-qty-unit').value;
+  const qtyEl=document.getElementById('meal-qty');
+  if(unit==='porc'||unit==='ud'){
+    if(!qtyEl.value||qtyEl.value==='100') qtyEl.value='1';
+  } else if(unit==='g'||unit==='ml'){
+    if(!qtyEl.value||qtyEl.value==='1') qtyEl.value='100';
+  }
+  scaleFromQty();
 }
 
 function scaleFromQty(){
   if(!baseFood)return;
-  const qty=parseFloat(document.getElementById('meal-qty').value)||100;
+  const qty=parseFloat(document.getElementById('meal-qty').value)||1;
   const unit=document.getElementById('meal-qty-unit').value;
   const calBase=baseFood.kcalOverride!=null?baseFood.kcalOverride:baseFood.cals;
-  document.getElementById('meal-cals').value=Math.round(calBase*(unit==='porc'?qty:qty/100));
+  let factor;
+  if(unit==='porc') factor=qty;
+  else if(unit==='ud') factor=qty*(baseFood.pesoUd||100)/100;
+  else factor=qty/100; // g or ml
+  document.getElementById('meal-cals').value=Math.round(calBase*factor);
 }
 
 function updateMacroSum(){
@@ -2833,6 +2942,7 @@ let editingPrIdx=null;
 
 // ── SHEET PRODUCTO ──
 let sheetProductoIdx = null;
+function openSheetProducto(idx){abrirSheetProducto(idx);}
 
 function abrirSheetProducto(idx){
   const p = misProductos[idx];
@@ -2901,12 +3011,13 @@ function openProductoModal(editIdx){
     document.getElementById('producto-title').textContent='Editar producto';
     document.getElementById('pr-name').value=p.name;
     document.getElementById('pr-cals').value=p.cals;
-    document.getElementById('pr-hc').value=p.hc;
-    document.getElementById('pr-prot').value=p.prot;
-    document.getElementById('pr-gras').value=p.gras;
+    // Mostrar valores por 100g (hcG/protG/grasG) no los porcentajes
+    document.getElementById('pr-hc').value=p.hcG!=null?p.hcG:p.hc;
+    document.getElementById('pr-prot').value=p.protG!=null?p.protG:p.prot;
+    document.getElementById('pr-gras').value=p.grasG!=null?p.grasG:p.gras;
     document.getElementById('pr-cat').value=p.compracat||'🛍 Otros';
     document.getElementById('pr-super').value=p.supermercado||'';
-    document.getElementById('pr-porcion').value=p.porcion||'';
+    document.getElementById('pr-porcion').value=p.pesoUd||'';
     document.getElementById('pr-elab').value=p.elab||'— Sin especificar —';
   }else{
     document.getElementById('producto-title').textContent='Nuevo producto';
@@ -2968,13 +3079,12 @@ function saveProducto(){
   const gras=parseFloat(document.getElementById('pr-gras').value)||0;
   const compracat=document.getElementById('pr-cat').value;
   const supermercado=document.getElementById('pr-super').value;
-  const porcion=document.getElementById('pr-porcion').value.trim();
-  // compute macro % from g (approx)
+  const porcionG=parseFloat(document.getElementById('pr-porcion').value)||null;
+  // Macros son por 100g — convertir a % para compatibilidad con el resto de la app
   const totalCal=hc*4+prot*4+gras*9||1;
   const hcPct=Math.round(hc*4/totalCal*100);
   const protPct=Math.round(prot*4/totalCal*100);
   const grasPct=Math.round(gras*9/totalCal*100);
-  // Leer micronutrientes opcionales
   const microFields=['fibra','azucares','grasasSat','grasasInsat','calcio','hierro','potasio','sodio','magnesio','zinc','vitC','vitD','vitA','folatos','vitB12'];
   const micro={};
   microFields.forEach(k=>{
@@ -2982,7 +3092,16 @@ function saveProducto(){
     if(el&&el.value!=='')micro[k]=parseFloat(el.value)||0;
   });
   const prElab=(()=>{const v=document.getElementById('pr-elab').value;return v!=='— Sin especificar —'?v:''})();
-  const p={name,cals,hc:hcPct,prot:protPct,gras:grasPct,hcG:hc,protG:prot,grasG:gras,cat:'Otros',compracat,supermercado,porcion,elab:prElab,...micro,_isProducto:true};
+  // pesoUd = porción en gramos (para poder seleccionar "1 ud" al añadir al menú)
+  const p={
+    name,cals,hc:hcPct,prot:protPct,gras:grasPct,
+    hcG:hc,protG:prot,grasG:gras,
+    cat:COMPRACAT_TO_NUTCAT[compracat]||'Otros',  // categoría nutricional automática
+    compracat,supermercado,
+    porcion:porcionG?`${porcionG}g`:null,
+    pesoUd:porcionG||null,          // permite seleccionar "1 ud" = porción típica
+    elab:prElab,...micro,_isProducto:true
+  };
   if(editingPrIdx!==null)misProductos[editingPrIdx]=p;
   else misProductos.push(p);
   saveAll();
@@ -3061,26 +3180,22 @@ function renderProductosList(q){
     <th style="${thStyle()}" onclick="sortProductoBy('supermercado')">Super ${sortArrow(s,'supermercado')}</th>
     <th style="${thStyle()}" onclick="sortProductoBy('compracat')">Categoría ${sortArrow(s,'compracat')}</th>
     <th style="${thStyle()}" onclick="sortProductoBy('cals')">kcal ${sortArrow(s,'cals')}</th>
-    <th style="${thStyle()}" onclick="sortProductoBy('hcG')">HC ${sortArrow(s,'hcG')}</th>
-    <th style="${thStyle()}" onclick="sortProductoBy('protG')">Prot ${sortArrow(s,'protG')}</th>
-    <th style="${thStyle()}" onclick="sortProductoBy('grasG')">Grasas ${sortArrow(s,'grasG')}</th>
-    <th></th>
+    <th style="${thStyle()}" colspan="3" onclick="sortProductoBy('hcG')"><span style="font-size:8px;color:#9ca3af;display:block">por 100g</span>HC / Prot / Grasas</th>
   </tr></thead><tbody>${
     sorted.map((p,i)=>{
       const realIdx=misProductos.indexOf(p);
       const meta=SUPER_META[p.supermercado]||{color:'#6b7280',emoji:'⚪'};
       const superBadge=p.supermercado
-        ?`<span style="font-size:9px;background:${meta.color}22;color:${meta.color};padding:1px 6px;border-radius:99px;border:1px solid ${meta.color}44;margin-left:4px;font-weight:600">${meta.emoji} ${p.supermercado}</span>`
-        :'';
-      return`<tr><td><strong>${p.name}</strong><br><span style="font-size:9px;color:#9ca3af">${p.porcion||''}</span></td>
-        <td>${superBadge||'<span style="font-size:10px;color:#d1d5db">—</span>'}</td>
+        ?`<span style="font-size:9px;background:${meta.color}22;color:${meta.color};padding:1px 6px;border-radius:99px;border:1px solid ${meta.color}44;font-weight:600">${meta.emoji} ${p.supermercado}</span>`
+        :'<span style="font-size:10px;color:#d1d5db">—</span>';
+      return`<tr style="cursor:pointer" onclick="openSheetProducto(${realIdx})">
+        <td><strong>${p.name}</strong>${p.porcion?`<br><span style="font-size:9px;color:#9ca3af">Porción: ${p.porcion}</span>`:''}
+        </td>
+        <td>${superBadge}</td>
         <td style="font-size:10px;color:#6b7280">${p.compracat||'—'}</td>
         <td><strong>${p.cals}</strong></td>
-        <td>${p.hcG||'—'}g</td><td>${p.protG||'—'}g</td><td>${p.grasG||'—'}g</td>
-        <td><div class="tbl-actions">
-          <button class="ic-btn" onclick="openProductoModal(${realIdx})">✏</button>
-          <button class="ic-btn" onclick="deleteProducto(${realIdx})" style="color:#fca5a5" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background=''">✕</button>
-        </div></td></tr>`;
+        <td colspan="3" style="font-size:11px;color:#374151">${p.hcG||'—'}g &nbsp; ${p.protG||'—'}g &nbsp; ${p.grasG||'—'}g</td>
+      </tr>`;
     }).join('')
   }</tbody></table>`;
 }
@@ -3088,7 +3203,7 @@ function renderProductosList(q){
 function openComidaBuilder(){
   cbList=[];cbSelected=null;
   document.getElementById('cb-name').value='';
-  document.getElementById('cb-cat').value='Pasta y arroz';
+  document.getElementById('cb-cat').value='Verduras y hortalizas';
   document.getElementById('cb-raciones').value=1;
   document.getElementById('cb-search').value='';
   document.getElementById('cb-qty').value='';
@@ -3123,16 +3238,23 @@ function selectCbIngr(f){
     document.getElementById('cb-unit').value='ud';
     document.getElementById('cb-qty').value='1';
     document.getElementById('cb-qty').placeholder='ud';
-    showUdHint('cb-ud-hint', f.pesoUd);
   } else if(f.pesoCuchara){
     document.getElementById('cb-unit').value='cuchara';
     document.getElementById('cb-qty').value='1';
     document.getElementById('cb-qty').placeholder='cucharas';
-    showUdHint('cb-ud-hint', f.pesoCuchara, 'cuchara');
   } else {
     document.getElementById('cb-unit').value='g';
     document.getElementById('cb-qty').placeholder='100';
-    hideUdHint('cb-ud-hint');
+  }
+  // Mostrar todas las medidas disponibles
+  const hint=document.getElementById('cb-ud-hint');
+  if(hint){
+    const partes=[];
+    if(f.pesoUd) partes.push(`≈ ${f.pesoUd}g por ud`);
+    if(f.pesoCuchara) partes.push(`≈ ${f.pesoCuchara}g por cuchara`);
+    hint.innerHTML=partes.length
+      ?`<span style="font-size:10px;color:var(--em-3);font-weight:500">${partes.join(' · ')}</span>`
+      :'';
   }
   document.getElementById('cb-qty').focus();
 }
@@ -4671,16 +4793,23 @@ function selectScIngr(f){
     document.getElementById('sc-ingr-unit').value='ud';
     document.getElementById('sc-ingr-qty').value='1';
     document.getElementById('sc-ingr-qty').placeholder='ud';
-    showUdHint('sc-ud-hint', f.pesoUd);
   } else if(f.pesoCuchara){
     document.getElementById('sc-ingr-unit').value='cuchara';
     document.getElementById('sc-ingr-qty').value='1';
     document.getElementById('sc-ingr-qty').placeholder='cucharas';
-    showUdHint('sc-ud-hint', f.pesoCuchara, 'cuchara');
   } else {
     document.getElementById('sc-ingr-unit').value='g';
     document.getElementById('sc-ingr-qty').placeholder='100';
-    hideUdHint('sc-ud-hint');
+  }
+  // Mostrar todas las medidas disponibles
+  const hint=document.getElementById('sc-ud-hint');
+  if(hint){
+    const partes=[];
+    if(f.pesoUd) partes.push(`≈ ${f.pesoUd}g por ud`);
+    if(f.pesoCuchara) partes.push(`≈ ${f.pesoCuchara}g por cuchara`);
+    hint.innerHTML=partes.length
+      ?`<span style="font-size:10px;color:var(--em-3);font-weight:500">${partes.join(' · ')}</span>`
+      :'';
   }
   document.getElementById('sc-ingr-qty').focus();
 }
@@ -4857,6 +4986,7 @@ function saveSheetComida(){
   const updated={
     name,
     cat:document.getElementById('sc-edit-cat').value,
+    raciones,
     elab:(()=>{const v=document.getElementById('sc-edit-elab').value;return v!=='— Sin especificar —'?v:''})(),
     pasos:[...scPasos],
     cals,hc,prot,gras,
@@ -5650,7 +5780,186 @@ function calcularMacrosDeIngredientes(ingredientes, raciones){
   };
 }
 
+let _csvConfirmFn=null;
+
 function importarCSVComidas(event){
+  document.getElementById('csv-modal-title').textContent='⬆️ Importar comidas CSV';
+  _csvConfirmFn=confirmarImportCSV;
+  _importarCSVGenerico(event);
+}
+
+function confirmarImportCSV(){
+  let importadas = 0;
+  _csvPreview.forEach(p => {
+    if(!misComidas.some(c => c.name.toLowerCase() === p.name.toLowerCase())){
+      misComidas.push(p);
+      importadas++;
+    }
+  });
+  _csvPreview = [];
+  saveAll();
+  closeModal('modal-csv-result');
+  renderCustomList(document.getElementById('custom-search').value);
+  alert('\u2705 ' + importadas + ' comidas importadas correctamente.');
+}
+
+function importarCSVAlimentos(event){
+  document.getElementById('csv-modal-title').textContent='⬆️ Importar alimentos CSV';
+  _csvConfirmFn=confirmarImportCSVAlimentos;
+  const file=event.target.files[0];
+  event.target.value='';
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split(/\r?\n/).filter(l=>l.trim());
+    if(!lines.length){alert('El archivo está vacío.');return;}
+    const sep=lines[0].includes(';')?';':',';
+    const headers=lines[0].split(sep).map(h=>h.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
+    const idx={
+      name: headers.findIndex(h=>h.includes('nombre')||h==='name'),
+      cat:  headers.findIndex(h=>h.includes('categ')),
+      cals: headers.findIndex(h=>h.includes('kcal')||h.includes('calor')),
+      hc:   headers.findIndex(h=>h==='hc'||h.includes('hidrat')),
+      prot: headers.findIndex(h=>h==='prot'||h.includes('prote')),
+      gras: headers.findIndex(h=>h==='grasas'||h.includes('gras')),
+    };
+    if(idx.name<0){alert('El CSV debe tener una columna "Nombre".');return;}
+    _csvPreview=[];
+    lines.slice(1).forEach(line=>{
+      if(!line.trim()) return;
+      const cols=line.split(sep).map(c=>c.trim());
+      const name=cols[idx.name]||'';
+      if(!name) return;
+      const cals=idx.cals>=0?parseInt(cols[idx.cals])||0:0;
+      const hc=  idx.hc>=0?parseFloat(cols[idx.hc])||0:0;
+      const prot=idx.prot>=0?parseFloat(cols[idx.prot])||0:0;
+      const gras=idx.gras>=0?parseFloat(cols[idx.gras])||0:0;
+      const cat= idx.cat>=0?cols[idx.cat]:'Otros';
+      _csvPreview.push({name,cals,hc,prot,gras,cat,custom:true});
+    });
+    if(!_csvPreview.length){alert('No se encontraron alimentos válidos.');return;}
+    const nuevos=_csvPreview.filter(p=>!misAlimentos.some(a=>a.name.toLowerCase()===p.name.toLowerCase()));
+    let html=`<div style="font-size:12px;margin-bottom:12px">Se encontraron <b>${_csvPreview.length} alimentos</b>:</div>`;
+    html+=`<div style="max-height:220px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:var(--rs);margin-bottom:10px">`;
+    html+=_csvPreview.map(p=>{
+      const dup=misAlimentos.some(a=>a.name.toLowerCase()===p.name.toLowerCase());
+      return`<div style="display:flex;align-items:center;gap:5px;padding:6px 10px;border-bottom:1px solid #f9fafb;font-size:11px">
+        <span style="flex:1">${p.name}</span>
+        <span style="color:#9ca3af;flex-shrink:0">${p.cals||'—'} kcal</span>
+        ${dup?'<span style="font-size:9px;background:#fffbeb;color:#92400e;border:1px solid #fde68a;padding:1px 5px;border-radius:99px">dup.</span>':''}
+      </div>`;
+    }).join('');
+    html+=`</div>`;
+    if(_csvPreview.length>nuevos.length) html+=`<div style="font-size:10px;color:#9ca3af;margin-bottom:6px">⚠️ Los duplicados se omitirán.</div>`;
+    html+=`<div style="font-size:10px;color:#6b7280">Se importarán <b>${nuevos.length}</b> alimentos nuevos.</div>`;
+    document.getElementById('csv-result-body').innerHTML=html;
+    document.getElementById('csv-confirm-btn').style.display=nuevos.length?'':'none';
+    document.getElementById('modal-csv-result').classList.add('active');
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function confirmarImportCSVAlimentos(){
+  let importados=0;
+  _csvPreview.forEach(p=>{
+    if(!misAlimentos.some(a=>a.name.toLowerCase()===p.name.toLowerCase())){
+      misAlimentos.push(p);importados++;
+    }
+  });
+  _csvPreview=[];saveAll();
+  closeModal('modal-csv-result');
+  renderBuiltinList(document.getElementById('builtin-search').value);
+  alert('\u2705 '+importados+' alimentos importados correctamente.');
+}
+
+function importarCSVProductos(event){
+  document.getElementById('csv-modal-title').textContent='⬆️ Importar productos CSV';
+  _csvConfirmFn=confirmarImportCSVProductos;
+  const file=event.target.files[0];
+  event.target.value='';
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split(/\r?\n/).filter(l=>l.trim());
+    if(!lines.length){alert('El archivo está vacío.');return;}
+    const sep=lines[0].includes(';')?';':',';
+    const headers=lines[0].split(sep).map(h=>h.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
+    const idx={
+      name:   headers.findIndex(h=>h.includes('nombre')||h==='name'),
+      cals:   headers.findIndex(h=>h.includes('kcal')||h.includes('calor')),
+      hc:     headers.findIndex(h=>h==='hc'||h.includes('hidrat')),
+      prot:   headers.findIndex(h=>h==='prot'||h.includes('prote')),
+      gras:   headers.findIndex(h=>h==='grasas'||h.includes('gras')),
+      cat:    headers.findIndex(h=>h.includes('categ')),
+      super_: headers.findIndex(h=>h.includes('super')||h.includes('mercado')),
+      porcion:headers.findIndex(h=>h.includes('porcion')||h.includes('porción')),
+    };
+    if(idx.name<0){alert('El CSV debe tener una columna "Nombre".');return;}
+    _csvPreview=[];
+    lines.slice(1).forEach(line=>{
+      if(!line.trim()) return;
+      const cols=line.split(sep).map(c=>c.trim());
+      const name=cols[idx.name]||'';
+      if(!name) return;
+      const cals=idx.cals>=0?parseInt(cols[idx.cals])||0:0;
+      const hcG= idx.hc>=0?parseFloat(cols[idx.hc])||0:0;
+      const protG=idx.prot>=0?parseFloat(cols[idx.prot])||0:0;
+      const grasG=idx.gras>=0?parseFloat(cols[idx.gras])||0:0;
+      const compracat=idx.cat>=0?cols[idx.cat]:'🛍 Otros';
+      const supermercado=idx.super_>=0?cols[idx.super_]:'';
+      const porcionG=idx.porcion>=0?parseFloat(cols[idx.porcion])||null:null;
+      const totalCal=hcG*4+protG*4+grasG*9||1;
+      _csvPreview.push({
+        name,cals,
+        hc:Math.round(hcG*4/totalCal*100),
+        prot:Math.round(protG*4/totalCal*100),
+        gras:Math.round(grasG*9/totalCal*100),
+        hcG,protG,grasG,
+        cat:COMPRACAT_TO_NUTCAT[compracat]||'Otros',
+        compracat,supermercado,
+        porcion:porcionG?`${porcionG}g`:null,
+        pesoUd:porcionG||null,
+        _isProducto:true
+      });
+    });
+    if(!_csvPreview.length){alert('No se encontraron productos válidos.');return;}
+    const nuevos=_csvPreview.filter(p=>!misProductos.some(x=>x.name.toLowerCase()===p.name.toLowerCase()));
+    let html=`<div style="font-size:12px;margin-bottom:12px">Se encontraron <b>${_csvPreview.length} productos</b>:</div>`;
+    html+=`<div style="max-height:220px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:var(--rs);margin-bottom:10px">`;
+    html+=_csvPreview.map(p=>{
+      const dup=misProductos.some(x=>x.name.toLowerCase()===p.name.toLowerCase());
+      return`<div style="display:flex;align-items:center;gap:5px;padding:6px 10px;border-bottom:1px solid #f9fafb;font-size:11px">
+        <span style="flex:1">${p.name}</span>
+        <span style="font-size:9px;color:#6b7280">${p.supermercado||''}</span>
+        <span style="color:#9ca3af;flex-shrink:0">${p.cals||'—'} kcal</span>
+        ${dup?'<span style="font-size:9px;background:#fffbeb;color:#92400e;border:1px solid #fde68a;padding:1px 5px;border-radius:99px">dup.</span>':''}
+      </div>`;
+    }).join('');
+    html+=`</div>`;
+    if(_csvPreview.length>nuevos.length) html+=`<div style="font-size:10px;color:#9ca3af;margin-bottom:6px">⚠️ Los duplicados se omitirán.</div>`;
+    html+=`<div style="font-size:10px;color:#6b7280">Se importarán <b>${nuevos.length}</b> productos nuevos.</div>`;
+    html+=`<div style="font-size:10px;color:#6b7280;margin-top:4px">Columnas esperadas: Nombre, kcal, HC, Prot, Grasas, Categoría, Supermercado, Porcion (g)</div>`;
+    document.getElementById('csv-result-body').innerHTML=html;
+    document.getElementById('csv-confirm-btn').style.display=nuevos.length?'':'none';
+    document.getElementById('modal-csv-result').classList.add('active');
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function confirmarImportCSVProductos(){
+  let importados=0;
+  _csvPreview.forEach(p=>{
+    if(!misProductos.some(x=>x.name.toLowerCase()===p.name.toLowerCase())){
+      misProductos.push(p);importados++;
+    }
+  });
+  _csvPreview=[];saveAll();
+  closeModal('modal-csv-result');
+  renderProductosList(document.getElementById('productos-search').value);
+  alert('\u2705 '+importados+' productos importados correctamente.');
+}
+
+function _importarCSVGenerico(event){
   const file = event.target.files[0];
   event.target.value = '';
   if(!file) return;
@@ -5747,20 +6056,6 @@ function importarCSVComidas(event){
   reader.readAsText(file, 'UTF-8');
 }
 
-function confirmarImportCSV(){
-  let importadas = 0;
-  _csvPreview.forEach(p => {
-    if(!misComidas.some(c => c.name.toLowerCase() === p.name.toLowerCase())){
-      misComidas.push(p);
-      importadas++;
-    }
-  });
-  _csvPreview = [];
-  saveAll();
-  closeModal('modal-csv-result');
-  renderCustomList(document.getElementById('custom-search').value);
-  alert('\u2705 ' + importadas + ' comidas importadas correctamente.');
-}
 
 // ══════════════════════════════════════════
 // PERSISTENCIA localStorage
@@ -6185,6 +6480,49 @@ function generateFromMenu(){
 
 
 // ── EXPORTAR / IMPORTAR DATOS ──
+function toggleExportMenu(){
+  const m=document.getElementById('export-menu');
+  m.style.display=m.style.display==='none'?'block':'none';
+}
+// Close export menu when clicking outside
+document.addEventListener('click',e=>{
+  const menu=document.getElementById('export-menu');
+  if(menu&&menu.style.display!=='none'&&!menu.parentElement.contains(e.target)){
+    menu.style.display='none';
+  }
+});
+
+function exportarCSV(tipo){
+  let rows=[], filename='', headers='';
+  if(tipo==='comidas'){
+    filename='mimenu-comidas.csv';
+    headers='Nombre;Categoría;Raciones;Elaboración;kcal;HC%;Prot%;Grasas%;Ingredientes';
+    rows=misComidas.map(c=>[
+      c.name, c.cat||'', c.raciones||1, c.elab||'',
+      c.cals, c.hc, c.prot, c.gras,
+      (c.ingredientes||[]).map(i=>`${i.name}:${i.qty||''}${i.unit||'g'}`).join('|')
+    ]);
+  } else if(tipo==='alimentos'){
+    filename='mimenu-alimentos.csv';
+    headers='Nombre;Categoría;kcal;HC;Prot;Grasas';
+    rows=misAlimentos.map(a=>[a.name, a.cat||'', a.cals, a.hc, a.prot, a.gras]);
+  } else if(tipo==='productos'){
+    filename='mimenu-productos.csv';
+    headers='Nombre;Categoría;Supermercado;kcal;HC;Prot;Grasas;Porcion';
+    rows=misProductos.map(p=>[
+      p.name, p.compracat||'', p.supermercado||'',
+      p.cals, p.hcG||'', p.protG||'', p.grasG||'',
+      p.pesoUd||''
+    ]);
+  }
+  const csv=[headers,...rows.map(r=>r.map(v=>String(v).includes(';')?`"${v}"`:v).join(';'))].join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
 function exportarDatos(){
   const datos={
     version:2,
