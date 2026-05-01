@@ -215,6 +215,7 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;color:#9ca3af;pointer-events:none}
 
 /* ── FOOD TABLE ── */
+.food-tbl-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .food-tbl{width:100%;border-collapse:collapse;font-size:11px}
 .food-tbl th{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;text-align:left;padding:6px 8px;border-bottom:2px solid #f3f4f6;background:#fafafa}
 .food-tbl td{padding:8px 8px;border-bottom:1px solid #f9fafb;color:#374151;vertical-align:middle}
@@ -3175,7 +3176,7 @@ function renderProductosList(q){
   }
   const sorted=sortBy(all,sortProducto.col,sortProducto.dir);
   const s=sortProducto;
-  el.innerHTML=`<table class="food-tbl"><thead><tr>
+  el.innerHTML=`<div class="food-tbl-wrap"><table class="food-tbl"><thead><tr>
     <th style="${thStyle()}" onclick="sortProductoBy('name')">Nombre ${sortArrow(s,'name')}</th>
     <th style="${thStyle()}" onclick="sortProductoBy('supermercado')">Super ${sortArrow(s,'supermercado')}</th>
     <th style="${thStyle()}" onclick="sortProductoBy('compracat')">Categoría ${sortArrow(s,'compracat')}</th>
@@ -3197,7 +3198,7 @@ function renderProductosList(q){
         <td colspan="3" style="font-size:11px;color:#374151">${p.hcG||'—'}g &nbsp; ${p.protG||'—'}g &nbsp; ${p.grasG||'—'}g</td>
       </tr>`;
     }).join('')
-  }</tbody></table>`;
+  }</tbody></table></div>`;
 }
 
 function openComidaBuilder(){
@@ -4595,7 +4596,7 @@ function renderCustomList(q){
     return av<bv?-sortComida.dir:av>bv?sortComida.dir:0;
   });
   const s=sortComida;
-  el.innerHTML=`<table class="food-tbl"><thead><tr>
+  el.innerHTML=`<div class="food-tbl-wrap"><table class="food-tbl"><thead><tr>
     <th style="${thStyle()}" onclick="sortComidaBy('name')">Nombre ${sortArrow(s,'name')}</th>
     <th style="${thStyle()}" onclick="sortComidaBy('cat')">Cat. ${sortArrow(s,'cat')}</th>
     <th colspan="4" style="font-size:8px;color:#9ca3af;font-weight:400;text-align:center;padding-bottom:2px">por ración</th>
@@ -4628,7 +4629,7 @@ function renderCustomList(q){
         </td>
         <td style="color:#6b7280">${f.cat||'—'}</td><td>${f.kcalOverride!=null?`<span style="font-weight:700">${f.kcalOverride}</span><span class="badge-editado" style="margin-left:3px">editado</span>`:f.cals}<span style="font-size:8px;color:#9ca3af;margin-left:2px">${(f.raciones&&f.raciones>1)?'×'+f.raciones:''}</span></td><td>${f.hc}%</td><td>${f.prot}%</td><td>${f.gras}%</td></tr>`;
     }).join('')
-  }</tbody></table>`;
+  }</tbody></table></div>`;
 }
 
 let builtinVisible=100;
@@ -4655,14 +4656,14 @@ function renderBuiltinList(q,reset){
     </button>
   </td></tr>`:'';
   el.innerHTML=`<div style="font-size:10px;color:#9ca3af;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><span>Mostrando ${visible.length} de ${sorted.length} alimentos</span><span style="background:#f3f4f6;border-radius:99px;padding:2px 8px;font-weight:500">Valores para 100g</span></div>
-  <table class="food-tbl"><thead><tr>
+  <div class="food-tbl-wrap"><table class="food-tbl"><thead><tr>
     <th style="${thStyle()}" onclick="sortAlimentoBy('name')">Nombre ${sortArrow(s,'name')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('cat')">Categoría ${sortArrow(s,'cat')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('cals')">kcal ${sortArrow(s,'cals')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('hc')">HC ${sortArrow(s,'hc')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('prot')">P ${sortArrow(s,'prot')}</th>
     <th style="${thStyle()}" onclick="sortAlimentoBy('gras')">G ${sortArrow(s,'gras')}</th>
-  </tr></thead><tbody>${rows}${showMore}</tbody></table>`;
+  </tr></thead><tbody>${rows}${showMore}</tbody></table></div>`;
 }
 
 // ── DETAIL SHEETS ──
