@@ -1,6 +1,6 @@
 // ── MiMenú Service Worker ──
 // Incrementa CACHE_VERSION con cada deploy para forzar actualización automática
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `mimenu-${CACHE_VERSION}`;
 
 // Archivos a cachear para funcionamiento offline
@@ -23,7 +23,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting()) // Activa el nuevo SW inmediatamente
+      .then(() => self.skipWaiting())
   );
 });
 
