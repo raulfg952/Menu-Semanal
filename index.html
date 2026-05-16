@@ -3132,7 +3132,7 @@ function openProductoModal(editIdx){
     document.getElementById('pr-elab').value=p.elab||'— Sin especificar —';
     // Restaurar nutriscore guardado en el dataset del barcode
     const barcodeEditEl=document.getElementById('pr-barcode');
-    if(barcodeEditEl) barcodeEditEl.dataset.nutriscore=p.nutriscore||'';
+    if(barcodeEditEl){barcodeEditEl.dataset.nutriscore=p.nutriscore||'';barcodeEditEl.value=p.barcode||'';}
     document.getElementById('pr-off-status').innerHTML='';
   }else{
     document.getElementById('producto-title').textContent='Nuevo producto';
@@ -3217,6 +3217,7 @@ function saveProducto(){
   });
   const prElab=(()=>{const v=document.getElementById('pr-elab').value;return v!=='— Sin especificar —'?v:''})();
   const nutriscore=document.getElementById('pr-barcode')?.dataset?.nutriscore||undefined;
+  const barcode=document.getElementById('pr-barcode')?.value?.trim()||undefined;
   const notas=document.getElementById('pr-notas')?.value?.trim()||undefined;
   const p={
     name,cals,hc:hcPct,prot:protPct,gras:grasPct,
@@ -3225,7 +3226,7 @@ function saveProducto(){
     compracat,supermercado,
     porcion:porcionG?`${porcionG}g`:null,
     pesoUd:porcionG||null,
-    elab:prElab,...micro,...(nutriscore?{nutriscore}:{}),...(notas?{notas}:{}),_isProducto:true
+    elab:prElab,...micro,...(nutriscore?{nutriscore}:{}),...(barcode?{barcode}:{}),...(notas?{notas}:{}),_isProducto:true
   };
   if(editingPrIdx!==null)misProductos[editingPrIdx]=p;
   else misProductos.push(p);
