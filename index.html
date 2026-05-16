@@ -1237,6 +1237,11 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
         <div><label class="form-lbl">Vit. B12 (µg)</label><input type="number" class="form-input" id="pr-vitB12" placeholder="0" min="0" step="0.1"/></div>
       </div>
     </div>
+    <!-- Notas opcionales -->
+    <div class="form-group" style="margin-top:8px">
+      <label class="form-lbl">Notas <span style="font-weight:400;color:#9ca3af;text-transform:none;letter-spacing:0">(opcional)</span></label>
+      <textarea class="form-input" id="pr-notas" placeholder="Ej: Sin gluten · Comprado en oferta · Apto celíacos..." maxlength="200" rows="2" style="resize:none;line-height:1.5"></textarea>
+    </div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal('modal-producto')">Cancelar</button>
       <button class="btn-save" onclick="saveProducto()">Guardar producto</button>
@@ -1267,6 +1272,10 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <span>🔬 Ver micronutrientes</span><span class="vm-arrow">▼</span>
     </button>
     <div class="nutrientes-panel" id="sp-nutrientes-panel"></div>
+    <div id="sp-notas-wrap" style="display:none;margin-top:10px;background:#fafafa;border:1px solid #f3f4f6;border-radius:10px;padding:10px 12px">
+      <div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:4px">📝 Notas</div>
+      <div id="sp-notas" style="font-size:12px;color:#374151;line-height:1.5"></div>
+    </div>
     <div class="sheet-actions" style="margin-top:14px">
       <button class="sheet-btn-edit" onclick="editarProductoDesdeSheet()">✏ Editar</button>
       <button class="sheet-btn-delete" id="sp-delete-btn" onclick="eliminarProductoDesdeSheet()" style="color:#dc2626;border-color:#fca5a5;background:#fff">Eliminar</button>
@@ -3000,6 +3009,16 @@ function abrirSheetProducto(idx){
   btn.style.display = hasMicro ? '' : 'none';
   if(hasMicro) panel.innerHTML = renderNutrientes(p);
 
+  // Notas
+  const notasWrap = document.getElementById('sp-notas-wrap');
+  const notasEl = document.getElementById('sp-notas');
+  if(p.notas){
+    notasWrap.style.display='';
+    notasEl.textContent = p.notas;
+  } else {
+    notasWrap.style.display='none';
+  }
+
   document.getElementById('sheet-producto').classList.add('active');
 }
 
@@ -3114,13 +3133,17 @@ function openProductoModal(editIdx){
     // Restaurar nutriscore guardado en el dataset del barcode
     const barcodeEditEl=document.getElementById('pr-barcode');
     if(barcodeEditEl) barcodeEditEl.dataset.nutriscore=p.nutriscore||'';
+    document.getElementById('pr-off-status').innerHTML='';
   }else{
     document.getElementById('producto-title').textContent='Nuevo producto';
     ['pr-name','pr-cals','pr-hc','pr-prot','pr-gras','pr-porcion','pr-barcode'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const barcodeNewEl=document.getElementById('pr-barcode');
+    if(barcodeNewEl) barcodeNewEl.dataset.nutriscore='';
     document.getElementById('pr-off-status').innerHTML='';
     document.getElementById('pr-elab').value='— Sin especificar —';
     document.getElementById('pr-super').value='';
     document.getElementById('pr-cat').value='🧴 Conservas y salsas';
+    document.getElementById('pr-notas').value='';
   }
   // Micronutrientes
   const microFields=['fibra','azucares','grasasSat','grasasInsat','grasasTrans','sal','calcio','hierro','potasio','sodio','magnesio','zinc','vitC','vitD','vitA','folatos','vitB12'];
@@ -3150,9 +3173,11 @@ function openProductoModal(editIdx){
     document.getElementById('pr-micro-btn').querySelector('span:first-child').innerHTML='🔬 Añadir micronutrientes <span style="font-size:9px;font-weight:400;opacity:.7">(opcional)</span>';
   }
   document.getElementById('pr-hint').innerHTML='';
-  const barcodeEl=document.getElementById('pr-barcode');
-  if(barcodeEl){barcodeEl.value='';barcodeEl.dataset.nutriscore='';}
-  document.getElementById('pr-off-status').innerHTML='';
+  // Cargar notas si estamos editando
+  if(editingPrIdx!==null){
+    const pn=misProductos[editingPrIdx];
+    document.getElementById('pr-notas').value=pn.notas||'';
+  }
   document.getElementById('modal-producto').classList.add('active');
 }
 
@@ -3192,6 +3217,7 @@ function saveProducto(){
   });
   const prElab=(()=>{const v=document.getElementById('pr-elab').value;return v!=='— Sin especificar —'?v:''})();
   const nutriscore=document.getElementById('pr-barcode')?.dataset?.nutriscore||undefined;
+  const notas=document.getElementById('pr-notas')?.value?.trim()||undefined;
   const p={
     name,cals,hc:hcPct,prot:protPct,gras:grasPct,
     hcG:hc,protG:prot,grasG:gras,
@@ -3199,7 +3225,7 @@ function saveProducto(){
     compracat,supermercado,
     porcion:porcionG?`${porcionG}g`:null,
     pesoUd:porcionG||null,
-    elab:prElab,...micro,...(nutriscore?{nutriscore}:{}),_isProducto:true
+    elab:prElab,...micro,...(nutriscore?{nutriscore}:{}),...(notas?{notas}:{}),_isProducto:true
   };
   if(editingPrIdx!==null)misProductos[editingPrIdx]=p;
   else misProductos.push(p);
@@ -3301,7 +3327,7 @@ function renderProductosList(q,reset){
         ?`<span style="font-size:9px;background:${meta.color}22;color:${meta.color};padding:1px 6px;border-radius:99px;border:1px solid ${meta.color}44;font-weight:600">${p.supermercado}</span>`
         :'<span style="font-size:10px;color:#d1d5db">—</span>';
       return`<tr style="cursor:pointer" onclick="openSheetProducto(${realIdx})">
-        <td><strong>${p.name}</strong>${p.nutriscore?' '+nutriscoreBadge(p.nutriscore):''}${p.porcion?`<br><span style="font-size:9px;color:#9ca3af">Porción: ${p.porcion}</span>`:''}
+        <td><strong>${p.name}</strong>${p.nutriscore?' '+nutriscoreBadge(p.nutriscore):''}${p.porcion?`<br><span style="font-size:9px;color:#9ca3af">Porción: ${p.porcion}</span>`:''}${p.notas?`<br><span style="font-size:9px;color:#9ca3af;font-style:italic">📝 ${p.notas}</span>`:''}
         </td>
         <td>${superBadge}</td>
         <td style="font-size:10px;color:#6b7280">${p.compracat||'—'}</td>
