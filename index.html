@@ -222,6 +222,28 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 .food-tbl td{padding:8px 8px;border-bottom:1px solid #f9fafb;color:#374151;vertical-align:middle}
 .food-tbl tr:last-child td{border-bottom:none}
 .food-tbl tr:hover td{background:#fafffe}
+/* ── SELECCIÓN MÚLTIPLE COMIDAS ── */
+.sel-bar{display:none;align-items:center;gap:8px;background:#1f2937;border-radius:var(--rm);padding:8px 10px;margin-bottom:10px;animation:fadeUp .2s ease both}
+.sel-bar.active{display:flex}
+.sel-bar-txt{font-size:11px;font-weight:600;color:#fff;flex:1}
+.sel-bar-count{font-size:10px;background:rgba(239,68,68,.2);color:#fca5a5;padding:2px 8px;border-radius:99px;font-weight:700;border:1px solid rgba(239,68,68,.3);min-width:20px;text-align:center}
+.sel-bar-cancel{background:rgba(255,255,255,.1);border:none;color:#d1d5db;font-size:10px;font-weight:600;padding:5px 10px;border-radius:var(--rs);cursor:pointer;font-family:'DM Sans',sans-serif}
+.sel-all-chk{width:18px;height:18px;border-radius:5px;border:2px solid #6b7280;display:flex;align-items:center;justify-content:center;font-size:10px;background:rgba(255,255,255,.1);cursor:pointer;flex-shrink:0;color:#fff;transition:all .15s}
+.sel-all-chk.checked{background:#dc2626;border-color:#dc2626}
+.row-chk{width:18px;height:18px;border-radius:5px;border:2px solid #d1d5db;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;background:#fff;font-size:10px;color:#fff;transition:all .15s}
+.row-chk.checked{background:#dc2626;border-color:#dc2626}
+.food-tbl tr.sel-selected td{background:#fef2f2 !important}
+.food-tbl tr.sel-selected:hover td{background:#fee2e2 !important}
+.sel-delete-btn{display:none;width:100%;margin-top:10px;padding:10px;background:#dc2626;border:none;color:#fff;font-size:12px;font-weight:700;border-radius:var(--rm);cursor:pointer;font-family:'DM Sans',sans-serif;align-items:center;justify-content:center;gap:6px;animation:fadeUp .2s ease both}
+.sel-delete-btn.active{display:flex}
+/* Menú contextual long press */
+.lp-ctx{position:fixed;background:#1f2937;border-radius:var(--rm);box-shadow:0 8px 32px rgba(0,0,0,.3);overflow:hidden;z-index:9999;min-width:180px;animation:popIn .18s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes popIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.lp-ctx-item{padding:10px 14px;font-size:12px;font-weight:500;color:#f3f4f6;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s;font-family:'DM Sans',sans-serif}
+.lp-ctx-item:hover{background:rgba(255,255,255,.08)}
+.lp-ctx-item.danger{color:#fca5a5}
+.lp-ctx-item.danger:hover{background:rgba(220,38,38,.2)}
+.lp-ctx-sep{height:1px;background:rgba(255,255,255,.1)}
 .src-badge{font-size:8px;padding:2px 5px;border-radius:99px;background:#ecfdf5;color:#065f46;font-weight:600;border:1px solid #a7f3d0;margin-left:4px}
 .ns-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:4px;font-size:11px;font-weight:800;color:#fff;text-transform:uppercase;flex-shrink:0}
 .ns-a{background:#038141}.ns-b{background:#85bb2f}.ns-c{background:#fecb02;color:#333}.ns-d{background:#ee8100}.ns-e{background:#e63e11}
@@ -744,7 +766,14 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
           <div class="search-wrap" style="flex:1;margin-bottom:0"><span class="search-icon">&#128269;</span><input type="text" placeholder="Buscar comidas..." oninput="renderCustomList(this.value)" id="custom-search"/></div>
           <button class="fav-filter-btn" id="fav-filter-btn" onclick="toggleFavFilter()" title="Mostrar solo favoritas">⭐ Favoritas</button>
         </div>
+        <div class="sel-bar" id="sel-bar">
+          <div class="sel-all-chk" id="sel-all-chk" onclick="toggleSelAll()"></div>
+          <span class="sel-bar-txt">Seleccionar todo</span>
+          <span class="sel-bar-count" id="sel-bar-count">0</span>
+          <button class="sel-bar-cancel" onclick="cancelarSeleccion()">Cancelar</button>
+        </div>
         <div id="custom-list"></div>
+        <button class="sel-delete-btn" id="sel-delete-btn" onclick="eliminarSeleccionadas()">🗑️ Eliminar <span id="sel-delete-count">0</span> comidas seleccionadas</button>
       </div>
       <div class="sec-panel" id="sec-builtin">
         <div class="search-wrap"><span class="search-icon">&#128269;</span><input type="text" placeholder="Buscar alimentos..." oninput="renderBuiltinList(this.value)" id="builtin-search"/></div>
@@ -3557,6 +3586,7 @@ function saveComida(){
 }
 
 function deleteComida(idx){misComidas.splice(idx,1);saveAll();renderCustomList(document.getElementById('custom-search').value)}
+let _selMode=false,_selSet=new Set();
 
 // ── SORT STATE ──
 let sortComida={col:'name',dir:1};
@@ -4907,6 +4937,7 @@ function renderCustomList(q,reset){
     el.innerHTML=mostrarSoloFavoritas
       ?'<div class="empty-tbl">No tienes comidas favoritas todavía.<br><span style="font-size:10px">Pulsa ⭐ en cualquier comida para marcarla.</span></div>'
       :'<div class="empty-tbl">Sin resultados.</div>';
+    actualizarBarraSeleccion();
     return;
   }
   // Aplicar sort respetando favoritas primero como criterio secundario estable
@@ -4929,6 +4960,7 @@ function renderCustomList(q,reset){
   </td></tr>`:'';
   el.innerHTML=`<div style="font-size:10px;color:#9ca3af;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><span>Mostrando ${visible.length} de ${sorted.length} comidas</span></div>
   <div class="food-tbl-wrap"><table class="food-tbl"><thead><tr>
+    ${_selMode?'<th style="width:24px"></th>':''}
     <th style="${thStyle()}" onclick="sortComidaBy('name')">Nombre ${sortArrow(s,'name')}</th>
     <th style="${thStyle()}" onclick="sortComidaBy('cat')">Cat. ${sortArrow(s,'cat')}</th>
     <th colspan="4" style="font-size:8px;color:#9ca3af;font-weight:400;text-align:center;padding-bottom:2px">por ración</th>
@@ -4952,18 +4984,26 @@ function renderCustomList(q,reset){
         return `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">${chips}${more}</div>`;
       })();
       const isFav=favoritas.has(f.name);
-      return`<tr style="cursor:pointer" onclick="openSheetComida(renderCustomList._refs[${si}])">
+      const isSelMia = isMia; // solo comidas propias son seleccionables
+      const chkHtml = isSelMia
+        ? `<td style="width:24px;padding:8px 4px 8px 8px"><div class="row-chk${_selSet.has(mi)?' checked':''}" id="rowchk-${si}" onclick="toggleSelRow(event,${mi},${si})"></div></td>`
+        : `<td style="width:24px"></td>`;
+      return`<tr style="cursor:pointer" class="${_selSet.has(mi)?'sel-selected':''}" id="selrow-${si}"
+        onclick="onRowClick(event,${si},${mi},${isSelMia?1:0})"
+        oncontextmenu="return false"
+        data-si="${si}" data-mi="${mi}" data-ismia="${isSelMia?1:0}">
+        ${_selMode?chkHtml:''}
         <td>
           <div style="display:flex;align-items:flex-start;gap:4px">
-            <button class="fav-star" onclick="toggleFavorita('${f.name.replace(/'/g,"\\'")}',event)" title="${isFav?'Quitar de favoritas':'Añadir a favoritas'}">${isFav?'⭐':'☆'}</button>
+            ${!_selMode?`<button class="fav-star" onclick="toggleFavorita('${f.name.replace(/'/g,"\\'")}',event)" title="${isFav?'Quitar de favoritas':'Añadir a favoritas'}">${isFav?'⭐':'☆'}</button>`:''}
             <div>${f.name}${ingrs}</div>
           </div>
         </td>
         <td style="color:#6b7280">${f.cat||'—'}</td><td>${f.kcalOverride!=null?`<span style="font-weight:700">${f.kcalOverride}</span><span class="badge-editado" style="margin-left:3px">editado</span>`:f.cals}<span style="font-size:8px;color:#9ca3af;margin-left:2px">${(f.raciones&&f.raciones>1)?'×'+f.raciones:''}</span></td><td>${f.hc}%</td><td>${f.prot}%</td><td>${f.gras}%</td></tr>`;
     }).join('')
   }${showMore}</tbody></table></div>`;
+  _postRenderCustomList();
 }
-
 let builtinVisible=100;
 renderBuiltinList._refs=[];
 function renderBuiltinList(q,reset){
@@ -6517,6 +6557,183 @@ function _importarCSVGenerico(event){
     document.getElementById('modal-csv-result').classList.add('active');
   };
   reader.readAsText(file, 'UTF-8');
+}
+
+function _postRenderCustomList(){
+  attachLongPress();
+  actualizarBarraSeleccion();
+}
+// ══════════════════════════════════════════
+function onRowClick(e, si, mi, isSelMia){
+  if(_selMode && isSelMia) toggleSelRow(e, mi, si);
+  else if(!_selMode) openSheetComida(renderCustomList._refs[si]);
+}
+
+function attachLongPress(){
+  const rows = document.querySelectorAll('#custom-list tbody tr[data-mi]');
+  rows.forEach(tr => {
+    let timer = null;
+    let startX = 0, startY = 0;
+    const mi = parseInt(tr.dataset.mi);
+    const isMia = tr.dataset.ismia === '1';
+    if(!isMia) return;
+    tr.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      timer = setTimeout(() => {
+        timer = null;
+        if(navigator.vibrate) navigator.vibrate(40);
+        if(_selMode){
+          // ya en modo selección: toggle directo
+          const si = parseInt(tr.dataset.si);
+          toggleSelRow(e, mi, si);
+        } else {
+          mostrarMenuContextual(e, mi, tr);
+        }
+      }, 500);
+    }, {passive: true});
+    tr.addEventListener('touchmove', e => {
+      if(!timer) return;
+      const dx = Math.abs(e.touches[0].clientX - startX);
+      const dy = Math.abs(e.touches[0].clientY - startY);
+      if(dx > 6 || dy > 6){ clearTimeout(timer); timer = null; }
+    }, {passive: true});
+    tr.addEventListener('touchend', () => { if(timer){ clearTimeout(timer); timer = null; } });
+    tr.addEventListener('touchcancel', () => { if(timer){ clearTimeout(timer); timer = null; } });
+    // soporte escritorio con click derecho / mousedown largo
+    tr.addEventListener('mousedown', e => {
+      if(e.button !== 0) return;
+      timer = setTimeout(() => {
+        timer = null;
+        if(navigator.vibrate) navigator.vibrate(40);
+        if(_selMode){
+          const si = parseInt(tr.dataset.si);
+          toggleSelRow(e, mi, si);
+        } else {
+          mostrarMenuContextual(e, mi, tr);
+        }
+      }, 600);
+    });
+    tr.addEventListener('mouseup',    () => { if(timer){ clearTimeout(timer); timer = null; } });
+    tr.addEventListener('mouseleave', () => { if(timer){ clearTimeout(timer); timer = null; } });
+  });
+}
+
+function mostrarMenuContextual(e, mi, tr){
+  cerrarMenuContextual();
+  const isMia = mi >= 0;
+  const menu = document.createElement('div');
+  menu.className = 'lp-ctx';
+  menu.id = 'lp-ctx-menu';
+  const f = misComidas[mi];
+  const isFav = f && favoritas.has(f.name);
+  menu.innerHTML = `
+    ${isMia ? `<div class="lp-ctx-item" onclick="cerrarMenuContextual();activarModoSeleccion(${mi})">☑️ Seleccionar varias</div>
+    <div class="lp-ctx-sep"></div>
+    <div class="lp-ctx-item danger" onclick="cerrarMenuContextual();confirmarEliminar1(${mi})">🗑️ Eliminar esta comida</div>` :
+    `<div class="lp-ctx-item" onclick="cerrarMenuContextual();openSheetComida(misComidas[${mi}])">👁 Ver detalle</div>`}
+  `;
+  document.body.appendChild(menu);
+  // posicionar cerca del toque
+  const rect = tr.getBoundingClientRect();
+  let top = rect.bottom + window.scrollY + 4;
+  let left = (e.touches ? e.touches[0].clientX : e.clientX) - 20;
+  if(left + 200 > window.innerWidth) left = window.innerWidth - 210;
+  menu.style.top = top + 'px';
+  menu.style.left = left + 'px';
+  setTimeout(() => document.addEventListener('click', cerrarMenuContextual, {once:true}), 10);
+}
+
+function cerrarMenuContextual(){
+  const m = document.getElementById('lp-ctx-menu');
+  if(m) m.remove();
+}
+
+function activarModoSeleccion(miInicial){
+  _selMode = true;
+  _selSet.clear();
+  if(miInicial >= 0) _selSet.add(miInicial);
+  renderCustomList(document.getElementById('custom-search').value, false);
+  actualizarBarraSeleccion();
+}
+
+function cancelarSeleccion(){
+  _selMode = false;
+  _selSet.clear();
+  renderCustomList(document.getElementById('custom-search').value, false);
+  actualizarBarraSeleccion();
+}
+
+function toggleSelRow(e, mi, si){
+  e && e.stopPropagation();
+  if(mi < 0) return;
+  if(_selSet.has(mi)) _selSet.delete(mi);
+  else _selSet.add(mi);
+  // actualizar fila visualmente sin re-renderizar todo
+  const tr = document.getElementById('selrow-' + si);
+  const chk = document.getElementById('rowchk-' + si);
+  if(tr){ if(_selSet.has(mi)) tr.classList.add('sel-selected'); else tr.classList.remove('sel-selected'); }
+  if(chk){ if(_selSet.has(mi)) chk.classList.add('checked'); else chk.classList.remove('checked'); }
+  actualizarBarraSeleccion();
+}
+
+function toggleSelAll(){
+  const allMis = [...document.querySelectorAll('#custom-list tbody tr[data-mi]')]
+    .filter(tr => tr.dataset.ismia === '1')
+    .map(tr => parseInt(tr.dataset.mi));
+  const todosSeleccionados = allMis.every(mi => _selSet.has(mi));
+  if(todosSeleccionados){ allMis.forEach(mi => _selSet.delete(mi)); }
+  else { allMis.forEach(mi => _selSet.add(mi)); }
+  renderCustomList(document.getElementById('custom-search').value, false);
+  actualizarBarraSeleccion();
+}
+
+function actualizarBarraSeleccion(){
+  const bar   = document.getElementById('sel-bar');
+  const count = document.getElementById('sel-bar-count');
+  const btn   = document.getElementById('sel-delete-btn');
+  const btnC  = document.getElementById('sel-delete-count');
+  const allChk= document.getElementById('sel-all-chk');
+  if(_selMode){
+    bar.classList.add('active');
+    btn.classList.add('active');
+    count.textContent = _selSet.size;
+    if(btnC) btnC.textContent = _selSet.size;
+    // sel-all state
+    const allMis = [...document.querySelectorAll('#custom-list tbody tr[data-mi]')]
+      .filter(tr => tr.dataset.ismia === '1')
+      .map(tr => parseInt(tr.dataset.mi));
+    if(allChk){
+      if(allMis.length && allMis.every(mi => _selSet.has(mi))) allChk.classList.add('checked');
+      else allChk.classList.remove('checked');
+    }
+  } else {
+    bar.classList.remove('active');
+    btn.classList.remove('active');
+  }
+}
+
+function confirmarEliminar1(mi){
+  const f = misComidas[mi];
+  if(!f) return;
+  if(confirm(`¿Eliminar "${f.name}"?`)){
+    misComidas.splice(mi, 1);
+    saveAll();
+    renderCustomList(document.getElementById('custom-search').value);
+  }
+}
+
+function eliminarSeleccionadas(){
+  if(!_selSet.size) return;
+  const nombres = [..._selSet].map(mi => misComidas[mi]?.name).filter(Boolean);
+  if(!confirm(`¿Eliminar ${nombres.length} comida${nombres.length>1?'s':''}?\n\n• ${nombres.join('\n• ')}`)) return;
+  // eliminar de mayor a menor índice para no desplazar
+  [..._selSet].sort((a,b)=>b-a).forEach(mi => { if(mi>=0 && mi<misComidas.length) misComidas.splice(mi,1); });
+  _selSet.clear();
+  _selMode = false;
+  saveAll();
+  renderCustomList(document.getElementById('custom-search').value);
+  actualizarBarraSeleccion();
 }
 
 
