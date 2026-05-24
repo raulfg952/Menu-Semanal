@@ -1523,6 +1523,13 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
         <div><label>Prot (g)</label><input type="number" class="form-input" id="sa-edit-prot" min="0"/></div>
         <div><label>Grasas (g)</label><input type="number" class="form-input" id="sa-edit-gras" min="0"/></div>
       </div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#6b7280;margin-bottom:6px">Equivalencias (opcional)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label style="font-size:10px;color:#6b7280;display:block;margin-bottom:4px">1 ud = g</label><input type="number" class="form-input" id="sa-edit-pesoUd" min="0" placeholder="ej: 60"/></div>
+          <div><label style="font-size:10px;color:#6b7280;display:block;margin-bottom:4px">1 cuchara = g</label><input type="number" class="form-input" id="sa-edit-pesoCuchara" min="0" placeholder="ej: 15"/></div>
+        </div>
+      </div>
     </div>
     <!-- VER MÁS: nutrientes extendidos -->
     <button class="ver-mas-btn" id="sa-ver-mas-btn" onclick="toggleNutrientes()">
@@ -5009,7 +5016,8 @@ renderBuiltinList._refs=[];
 function renderBuiltinList(q,reset){
   if(reset||reset===undefined)builtinVisible=100;
   const el=document.getElementById('builtin-list');
-  let all=[...DESPENSA,...misAlimentos];
+  const despensaFiltrada=DESPENSA.filter(d=>!misAlimentos.some(a=>a.name===d.name));
+  let all=[...despensaFiltrada,...misAlimentos];
   if(q)all=all.filter(f=>f.name.toLowerCase().includes(q.toLowerCase())||f.cat.toLowerCase().includes(q.toLowerCase()));
   if(!all.length){el.innerHTML='<div class="empty-tbl">Sin resultados.</div>';return}
   const sorted=sortBy(all,sortAlimento.col,sortAlimento.dir);
@@ -5408,6 +5416,8 @@ function openSheetAlimento(f){
   document.getElementById('sa-edit-hc').value=f.hc;
   document.getElementById('sa-edit-prot').value=f.prot;
   document.getElementById('sa-edit-gras').value=f.gras;
+  document.getElementById('sa-edit-pesoUd').value=f.pesoUd||'';
+  document.getElementById('sa-edit-pesoCuchara').value=f.pesoCuchara||'';
 
   // Always show edit form — base items save as custom override
   document.getElementById('sa-edit-section').style.display='block';
@@ -5508,6 +5518,8 @@ function toggleNutrientes(){
 function saveSheetAlimento(){
   const name=document.getElementById('sa-edit-name').value.trim();
   if(!name)return;
+  const pesoUd=parseFloat(document.getElementById('sa-edit-pesoUd').value)||null;
+  const pesoCuchara=parseFloat(document.getElementById('sa-edit-pesoCuchara').value)||null;
   const updated={
     name,
     cat:document.getElementById('sa-edit-cat').value,
@@ -5515,6 +5527,8 @@ function saveSheetAlimento(){
     hc:parseFloat(document.getElementById('sa-edit-hc').value)||0,
     prot:parseFloat(document.getElementById('sa-edit-prot').value)||0,
     gras:parseFloat(document.getElementById('sa-edit-gras').value)||0,
+    pesoUd,
+    pesoCuchara,
     custom:true
   };
   if(sheetAlimentoRef._isBase){
@@ -6196,11 +6210,10 @@ function parsearIngredientesCSV(txt){
         ingredientes.push({name: nombre, qty, unit, _isProducto: true});
       }
     } else {
-      const found = allIngr.find(f =>
-        f.name.toLowerCase() === nombre.toLowerCase() ||
-        f.name.toLowerCase().includes(nombre.toLowerCase()) ||
-        nombre.toLowerCase().includes(f.name.toLowerCase().split(' ')[0])
-      );
+      const exact = allIngr.find(f => f.name.toLowerCase() === nombre.toLowerCase());
+      const partial = !exact && allIngr.find(f => f.name.toLowerCase().includes(nombre.toLowerCase()));
+      const fuzzy = !exact && !partial && allIngr.find(f => nombre.toLowerCase().includes(f.name.toLowerCase().split(' ')[0]));
+      const found = exact || partial || fuzzy;
       ingredientes.push(found ? {name: found.name, qty, unit} : {name: nombre, qty, unit});
     }
   });
