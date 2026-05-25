@@ -1,6 +1,6 @@
 // ── MiMenú Service Worker ──
 // Incrementa CACHE_VERSION con cada deploy para forzar actualización automática
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const CACHE_NAME = `mimenu-${CACHE_VERSION}`;
 
 // Archivos a cachear para funcionamiento offline

@@ -343,6 +343,14 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
 .sheet-edit-section{margin-bottom:4px}
 .sheet-edit-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;margin-bottom:12px}
 .sheet-actions{display:flex;gap:8px;margin-top:16px}
+.usado-en-wrap{border-top:0.5px solid var(--color-border-tertiary,#e5e7eb);padding-top:14px;margin-top:2px;margin-bottom:4px}
+.usado-en-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.usado-en-title{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+.usado-en-chips{display:flex;flex-wrap:wrap;gap:6px}
+.usado-en-chip{font-size:11px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md,8px);padding:4px 10px;color:var(--color-text-primary);cursor:pointer;transition:background .12s}
+.usado-en-chip:hover{background:var(--color-background-tertiary)}
+.usado-en-chip.mas{background:var(--color-background-info);border-color:var(--color-border-info);color:var(--color-text-info)}
+.usado-en-empty{font-size:11px;background:var(--color-background-warning);border:0.5px solid var(--color-border-warning);border-radius:var(--border-radius-md,8px);padding:8px 12px;color:var(--color-text-warning)}
 .sheet-btn-edit{flex:1;background:var(--grad);color:#fff;border:none;border-radius:var(--rm);padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px rgba(5,150,105,.3);transition:all .2s}
 .sheet-btn-edit:hover{opacity:.9;transform:translateY(-1px)}
 .sheet-btn-delete{padding:11px 16px;background:#fff;color:#dc2626;border:1.5px solid #fca5a5;border-radius:var(--rm);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
@@ -1305,6 +1313,7 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:4px">📝 Notas</div>
       <div id="sp-notas" style="font-size:12px;color:#374151;line-height:1.5"></div>
     </div>
+    <div class="usado-en-wrap" id="sp-usado-en"></div>
     <div class="sheet-actions" style="margin-top:14px">
       <button class="sheet-btn-edit" onclick="editarProductoDesdeSheet()">✏ Editar</button>
       <button class="sheet-btn-delete" id="sp-delete-btn" onclick="eliminarProductoDesdeSheet()" style="color:#dc2626;border-color:#fca5a5;background:#fff">Eliminar</button>
@@ -1536,7 +1545,7 @@ body,div,input,select,button,textarea{font-family:'DM Sans',sans-serif}
       <span>🔬 Ver más nutrientes</span><span class="vm-arrow">▼</span>
     </button>
     <div class="nutrientes-panel" id="sa-nutrientes-panel"></div>
-
+    <div class="usado-en-wrap" id="sa-usado-en"></div>
     <div class="sheet-actions">
       <button class="sheet-btn-edit" id="sa-save-btn" onclick="saveSheetAlimento()">Guardar cambios</button>
       <button class="sheet-btn-delete" id="sa-delete-btn" onclick="deleteSheetAlimento()" style="display:none">Eliminar</button>
@@ -2586,7 +2595,7 @@ function getWeekShortLabel(o){
 function getDayStats(meals){
   const cals=meals.reduce((s,m)=>{
     // Si la comida tiene un override actualizado en misComidas, usarlo
-    const mc=misComidas.find(c=>c.name===m.name&&(c.cals===m.cals||c.kcalOverride===m.cals));
+    const mc=misComidas.find(c=>c.name===m.name);
     return s+(mc&&mc.kcalOverride!=null?mc.kcalOverride:m.cals);
   },0);
   const hcC=meals.reduce((s,m)=>s+m.cals*m.hc/100,0);
@@ -3056,6 +3065,7 @@ function abrirSheetProducto(idx){
   }
 
   document.getElementById('sheet-producto').classList.add('active');
+  renderUsadoEn(p.name, 'sp-usado-en');
 }
 
 function toggleNutrientesProducto(){
@@ -4979,7 +4989,7 @@ function renderCustomList(q,reset){
     <th style="${thStyle()}" onclick="sortComidaBy('gras')">G% ${sortArrow(s,'gras')}</th>
   </tr></thead><tbody>${
     visible.map((f,si)=>{
-      const mi=misComidas.findIndex(c=>c.name===f.name&&c.cals===f.cals);const isMia=mi>=0;
+      const mi=misComidas.findIndex(c=>c.name===f.name);const isMia=mi>=0;
       renderCustomList._refs[si]=f;
       const MAX_INGR=2;
       const ingrs=(()=>{
@@ -5098,10 +5108,7 @@ function clearKcalOverride(){
 }
 
 function openSheetComida(f){
-  // Buscar por nombre+cals o por nombre+kcalOverride (si las kcal base cambiaron tras override)
-  let mi=misComidas.findIndex(c=>c.name===f.name&&c.cals===f.cals);
-  if(mi<0&&f.kcalOverride!=null) mi=misComidas.findIndex(c=>c.name===f.name&&c.kcalOverride===f.kcalOverride);
-  if(mi<0) mi=misComidas.findIndex(c=>c.name===f.name); // fallback por nombre
+  let mi=misComidas.findIndex(c=>c.name===f.name);
   const isMia=mi>=0;
   sheetComidaRef={...f, _idx:mi, _isBase:!isMia};
 
@@ -5222,18 +5229,54 @@ function addScIngr(){
 
 function removeScIngr(idx){scIngrList.splice(idx,1);renderScIngrList();recalcSheetComida();_warnKcalOverrideIfNeeded();}
 
-function renderScIngrList(){
+function renderScIngrList(editIdx){
   const el=document.getElementById('sc-ingr-list');
   if(!scIngrList.length){
     el.innerHTML='<div style="font-size:11px;color:#9ca3af;padding:4px 0;font-style:italic">Sin ingredientes. Añade alimentos de Mi despensa.</div>';
     return;
   }
-  el.innerHTML=`<table class="food-tbl"><thead><tr><th>Ingrediente</th><th>Cant.</th><th>kcal</th><th>HC</th><th>P</th><th>G</th><th></th></tr></thead><tbody>${
-    scIngrList.map((f,i)=>{
+  el.innerHTML='<table class="food-tbl"><thead><tr><th>Ingrediente</th><th>Cant.</th><th>kcal</th><th>HC</th><th>P</th><th>G</th><th></th></tr></thead><tbody>'
+  + scIngrList.map((f,i)=>{
       const fac=calcFac(f);
-      return`<tr><td>${f.name}</td><td style="color:#6b7280">${f.qty}${f.unit}</td><td>${Math.round(f.cals*fac)}</td><td>${(f.hc*fac).toFixed(1)}g</td><td>${(f.prot*fac).toFixed(1)}g</td><td>${(f.gras*fac).toFixed(1)}g</td><td><button class="ic-btn" onclick="removeScIngr(${i})">✕</button></td></tr>`;
+      if(i===editIdx){
+        return '<tr style="background:var(--color-background-secondary)">'
+          +'<td style="font-weight:500">'+f.name+'</td>'
+          +'<td colspan="5" style="padding:5px 6px">'
+          +'<div style="display:flex;align-items:center;gap:5px">'
+          +'<input type="number" id="sc-edit-qty" value="'+f.qty+'" min="0.1" step="0.1" style="width:54px;font-size:12px;padding:4px 6px;border:0.5px solid var(--color-border-primary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary)"/>'
+          +'<select id="sc-edit-unit" style="font-size:12px;padding:4px 5px;border:0.5px solid var(--color-border-primary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary)">'
+          +'<option'+(f.unit==='g'?' selected':'')+'>g</option>'
+          +'<option'+(f.unit==='ml'?' selected':'')+'>ml</option>'
+          +'<option'+(f.unit==='ud'?' selected':'')+'>ud</option>'
+          +'<option'+(f.unit==='cuchara'?' selected':'')+'>cuchara</option>'
+          +'</select>'
+          +'<button onclick="confirmarEditIngr('+i+')" style="font-size:11px;padding:4px 9px;border-radius:var(--border-radius-md);background:var(--color-background-success);border:0.5px solid var(--color-border-success);color:var(--color-text-success);cursor:pointer;font-weight:500">✓</button>'
+          +'<button onclick="renderScIngrList()" style="font-size:11px;padding:4px 9px;border-radius:var(--border-radius-md);background:none;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);cursor:pointer">✕</button>'
+          +'</div></td>'
+          +'<td></td></tr>';
+      }
+      return '<tr>'
+        +'<td>'+f.name+'</td>'
+        +'<td><span class="ingr-qty" style="cursor:pointer" onclick="renderScIngrList('+i+')" title="Editar cantidad">'+f.qty+f.unit+'</span></td>'
+        +'<td>'+Math.round(f.cals*fac)+'</td>'
+        +'<td>'+(f.hc*fac).toFixed(1)+'g</td>'
+        +'<td>'+(f.prot*fac).toFixed(1)+'g</td>'
+        +'<td>'+(f.gras*fac).toFixed(1)+'g</td>'
+        +'<td><button class="ic-btn" onclick="removeScIngr('+i+')">✕</button></td></tr>';
     }).join('')
-  }</tbody></table>`;
+  +'</tbody></table>'
+  +'<div style="font-size:10px;color:var(--color-text-tertiary);padding:4px 2px">Toca la cantidad para editarla</div>';
+}
+
+function confirmarEditIngr(idx){
+  const qty=parseFloat(document.getElementById('sc-edit-qty').value);
+  const unit=document.getElementById('sc-edit-unit').value;
+  if(!qty||qty<=0) return;
+  scIngrList[idx].qty=qty;
+  scIngrList[idx].unit=unit;
+  renderScIngrList();
+  recalcSheetComida();
+  _warnKcalOverrideIfNeeded();
 }
 
 function recalcSheetComida(){
@@ -5437,6 +5480,7 @@ function openSheetAlimento(f){
   btn.style.display=hasExtra?'':'none';
 
   document.getElementById('sheet-alimento').classList.add('active');
+  renderUsadoEn(f.name, 'sa-usado-en');
 }
 
 // ── NUTRIENTES EXTENDIDOS ──
@@ -5515,6 +5559,63 @@ function toggleNutrientes(){
   btn.querySelector('span:first-child').textContent=isOpen?'🔬 Ver más nutrientes':'🔬 Ocultar nutrientes';
 }
 
+function _usadoEnChip(nombre, sheetId){
+  var safe = nombre.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return '<span class="usado-en-chip" onclick="closeSheet(\'' + sheetId + '\');_abrirComidaPorNombre(\'' + safe + '\')">' + nombre + '</span>';
+}
+function _abrirComidaPorNombre(nombre){
+  var c = misComidas.find(function(x){return x.name===nombre;});
+  if(c) openSheetComida(c);
+}
+function renderUsadoEn(nombreIngrediente, elId){
+  var el = document.getElementById(elId);
+  if(!el) return;
+  var MAX_VISIBLE = 5;
+  var sheetId = elId.indexOf('sa')>=0 ? 'sheet-alimento' : 'sheet-producto';
+  var comidas = misComidas.filter(function(c){
+    return c.ingredientes && c.ingredientes.some(function(ing){
+      return ing.name.toLowerCase() === nombreIngrediente.toLowerCase();
+    });
+  });
+  if(!comidas.length){
+    el.innerHTML='<div class="usado-en-empty">Este alimento no se usa en ninguna comida todavía.</div>';
+    return;
+  }
+  var visibles = comidas.slice(0, MAX_VISIBLE);
+  var resto = comidas.length - MAX_VISIBLE;
+  var chips = visibles.map(function(c){ return _usadoEnChip(c.name, sheetId); }).join('');
+  var safeNombre = nombreIngrediente.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  var masChip = resto > 0
+    ? '<span class="usado-en-chip mas" onclick="expandirUsadoEn(\'' + elId + '\',\'' + safeNombre + '\',\'' + sheetId + '\')">+' + resto + ' más</span>'
+    : '';
+  el.innerHTML = '<div class="usado-en-hdr"><span class="usado-en-title">🥘 Usado en ' + comidas.length + ' comida' + (comidas.length!==1?'s':'') + '</span></div>'
+    + '<div class="usado-en-chips" id="' + elId + '-chips">' + chips + masChip + '</div>';
+}
+function expandirUsadoEn(elId, nombreIngrediente, sheetId){
+  var comidas = misComidas.filter(function(c){
+    return c.ingredientes && c.ingredientes.some(function(ing){
+      return ing.name.toLowerCase() === nombreIngrediente.toLowerCase();
+    });
+  });
+  var chips = comidas.map(function(c){ return _usadoEnChip(c.name, sheetId); }).join('');
+  document.getElementById(elId+'-chips').innerHTML = chips;
+}
+
+function recalcularComidasConAlimento(nombreAlimento){
+  misComidas.forEach((comida, idx) => {
+    if(!comida.ingredientes || !comida.ingredientes.length) return;
+    const usaEsteAlimento = comida.ingredientes.some(
+      ing => ing.name.toLowerCase() === nombreAlimento.toLowerCase()
+    );
+    if(!usaEsteAlimento) return;
+    const calc = calcularMacrosDeIngredientes(comida.ingredientes, comida.raciones);
+    misComidas[idx].cals = calc.cals;
+    misComidas[idx].hc   = calc.hc;
+    misComidas[idx].prot = calc.prot;
+    misComidas[idx].gras = calc.gras;
+  });
+}
+
 function saveSheetAlimento(){
   const name=document.getElementById('sa-edit-name').value.trim();
   if(!name)return;
@@ -5536,6 +5637,8 @@ function saveSheetAlimento(){
   }else{
     misAlimentos[sheetAlimentoRef._idx]=updated;
   }
+  // Recalcular macros de todas las comidas que usen este alimento
+  recalcularComidasConAlimento(updated.name);
   saveAll();
   document.getElementById('sheet-alimento').classList.remove('active');
   renderBuiltinList(document.getElementById('builtin-search').value);
@@ -6820,22 +6923,22 @@ function abrirResumenDia(dayIdx){
 
   // Macros totales — respetar kcalOverride si existe en misComidas
   const totalCals=meals.reduce((s,m)=>{
-    const mc=misComidas.find(c=>c.name===m.name&&(c.cals===m.cals||c.kcalOverride===m.cals));
+    const mc=misComidas.find(c=>c.name===m.name);
     return s+(mc&&mc.kcalOverride!=null?mc.kcalOverride:m.cals);
   },0);
   // Para los gramos de macros, usar también el kcal real de cada comida
   const hcG=meals.reduce((s,m)=>{
-    const mc=misComidas.find(c=>c.name===m.name&&(c.cals===m.cals||c.kcalOverride===m.cals));
+    const mc=misComidas.find(c=>c.name===m.name);
     const kcal=mc&&mc.kcalOverride!=null?mc.kcalOverride:m.cals;
     return s+kcal*m.hc/100/4;
   },0);
   const protG=meals.reduce((s,m)=>{
-    const mc=misComidas.find(c=>c.name===m.name&&(c.cals===m.cals||c.kcalOverride===m.cals));
+    const mc=misComidas.find(c=>c.name===m.name);
     const kcal=mc&&mc.kcalOverride!=null?mc.kcalOverride:m.cals;
     return s+kcal*m.prot/100/4;
   },0);
   const grasG=meals.reduce((s,m)=>{
-    const mc=misComidas.find(c=>c.name===m.name&&(c.cals===m.cals||c.kcalOverride===m.cals));
+    const mc=misComidas.find(c=>c.name===m.name);
     const kcal=mc&&mc.kcalOverride!=null?mc.kcalOverride:m.cals;
     return s+kcal*m.gras/100/9;
   },0);
