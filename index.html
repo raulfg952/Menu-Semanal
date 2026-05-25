@@ -2575,7 +2575,10 @@ let cbSelected=null;
 window._openDays=new Set([0]);
 
 function getAllFoodsForSearch(){return[...DESPENSA,...misAlimentos,...COMIDAS_BASE,...misComidas,...misProductos.map(p=>({...p,_isProducto:true}))]}
-function getAllIngr(){return[...DESPENSA,...misAlimentos]}
+function getAllIngr(){
+  const overrides=new Set(misAlimentos.map(a=>a.name.toLowerCase()));
+  return[...misAlimentos,...DESPENSA.filter(d=>!overrides.has(d.name.toLowerCase()))];
+}
 function getWeekKey(o){return'w'+o}
 function getWeekData(o){const k=getWeekKey(o);if(!menuData[k])menuData[k]=DAYS.map(()=>[]);return menuData[k]}
 function getMonday(off){
@@ -3559,13 +3562,17 @@ function calcFac(f){
     const pesoPorcion=parseFloat(f.porcion)||100;
     return f.qty*pesoPorcion/100;
   }
-  if(f.unit==='ud'){
-    const pesoUnitario=f.pesoUd||100;
-    return f.qty*pesoUnitario/100;
-  }
-  if(f.unit==='cuchara'){
-    const pesoCuchara=f.pesoCuchara||15;
-    return f.qty*pesoCuchara/100;
+  if(f.unit==='ud'||f.unit==='cuchara'){
+    const allIngr=getAllIngr();
+    const base=allIngr.find(a=>a.name.toLowerCase()===(f.name||'').toLowerCase());
+    if(f.unit==='ud'){
+      const pesoUnitario=(base&&base.pesoUd)||f.pesoUd||100;
+      return f.qty*pesoUnitario/100;
+    }
+    if(f.unit==='cuchara'){
+      const pesoCuchara=(base&&base.pesoCuchara)||f.pesoCuchara||15;
+      return f.qty*pesoCuchara/100;
+    }
   }
   return f.qty/100;
 }
@@ -5642,6 +5649,7 @@ function saveSheetAlimento(){
   saveAll();
   document.getElementById('sheet-alimento').classList.remove('active');
   renderBuiltinList(document.getElementById('builtin-search').value);
+  renderCustomList(document.getElementById('custom-search').value);
 }
 
 function deleteSheetAlimento(){
